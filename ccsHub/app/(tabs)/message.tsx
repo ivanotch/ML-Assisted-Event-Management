@@ -2,12 +2,96 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Image } from 'react-native';
+import { useMemo } from 'react';
+import { router } from 'expo-router';
 
 
 type TabType = {
   label: string;
   icon: keyof typeof MaterialCommunityIcons.glyphMap;
 };
+
+type MessageType = 'message' | 'group' | 'invitation';
+
+type ChatItem = {
+  id: string;
+  name: string;
+  avatar: string;
+  lastMessage: string;
+  time: string;
+  unreadCount: number;
+  isOnline: boolean;
+  type: MessageType;
+};
+
+const MESSAGES: ChatItem[] = [
+  // 🔵 DIRECT MESSAGES
+  {
+    id: '1',
+    name: 'John Cruz',
+    avatar: 'https://i.pravatar.cc/150?img=1',
+    lastMessage: 'Hey bro, are you coming later?',
+    time: '2:45 PM',
+    unreadCount: 2,
+    isOnline: true,
+    type: 'message',
+  },
+  {
+    id: '2',
+    name: 'Anna Reyes',
+    avatar: 'https://i.pravatar.cc/150?img=5',
+    lastMessage: 'The event starts at 6PM.',
+    time: '1:10 PM',
+    unreadCount: 0,
+    isOnline: false,
+    type: 'message',
+  },
+
+  // 🟢 GROUPS
+  {
+    id: '3',
+    name: 'Event Committee',
+    avatar: 'https://i.pravatar.cc/150?img=12',
+    lastMessage: 'Meeting moved to Friday.',
+    time: 'Mon',
+    unreadCount: 4,
+    isOnline: false,
+    type: 'group',
+  },
+  {
+    id: '4',
+    name: 'Capstone Team',
+    avatar: 'https://i.pravatar.cc/150?img=18',
+    lastMessage: 'Deadline is next week!',
+    time: 'Yesterday',
+    unreadCount: 1,
+    isOnline: false,
+    type: 'group',
+  },
+
+  // 🟡 INVITATIONS
+  {
+    id: '5',
+    name: 'Hackathon 2026',
+    avatar: 'https://i.pravatar.cc/150?img=20',
+    lastMessage: 'You are invited to join this event.',
+    time: 'Sun',
+    unreadCount: 0,
+    isOnline: false,
+    type: 'invitation',
+  },
+  {
+    id: '6',
+    name: 'Rescue Link Volunteers',
+    avatar: 'https://i.pravatar.cc/150?img=22',
+    lastMessage: 'Invitation pending approval.',
+    time: 'Sat',
+    unreadCount: 0,
+    isOnline: false,
+    type: 'invitation',
+  },
+];
 
 
 function message() {
@@ -20,10 +104,27 @@ function message() {
     { label: 'Invitations', icon: 'email-outline' },
   ];
 
+  const filteredMessages = useMemo(() => {
+    const searchText = search.trim().toLowerCase();
+
+    return MESSAGES.filter((item) => {
+      const matchesSearch =
+        item.name.toLowerCase().includes(searchText) ||
+        item.lastMessage.toLowerCase().includes(searchText);
+
+      const matchesTab =
+        (activeTab === 'Messages' && item.type === 'message') ||
+        (activeTab === 'Groups' && item.type === 'group') ||
+        (activeTab === 'Invitations' && item.type === 'invitation');
+
+      return matchesTab && matchesSearch;
+    });
+  }, [search, activeTab]);
+
   return (
     <SafeAreaView style={{ flex: 1, paddingHorizontal: 10, backgroundColor: '#ffffff' }}>
 
-      <Text style={{textAlign: 'center', marginVertical: 10, fontSize: 18, fontWeight: '600'}}>
+      <Text style={{ textAlign: 'center', marginVertical: 10, fontSize: 18, fontWeight: '600' }}>
         Messages
       </Text>
 
@@ -58,7 +159,7 @@ function message() {
         <Ionicons name="search-outline" size={20} color="gray" style={{ marginLeft: 8 }} />
         <TextInput
           style={styles.searchInput}
-          placeholder="Search events..."
+          placeholder="Search names or groups..."
           value={search}
           onChangeText={setSearch}
         />
@@ -70,10 +171,51 @@ function message() {
         </Text>
       </View>
 
-      <Text>
-        Sample
-      </Text>
-    </SafeAreaView>
+      <FlatList
+        data={filteredMessages}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            style={styles.chatItem}
+            onPress={() => router.push({
+              pathname: '/chat/[id]',
+              params: { id: item.id },
+            })}
+          >
+      <View style={{ position: 'relative' }}>
+        <Image source={{ uri: item.avatar }} style={styles.avatar} />
+        {item.isOnline && <View style={styles.onlineIndicator} />}
+      </View>
+
+      <View style={styles.chatContent}>
+        <View style={styles.chatHeader}>
+          <Text style={styles.chatName}>{item.name}</Text>
+          <Text style={styles.chatTime}>{item.time}</Text>
+        </View>
+
+        <View style={styles.messageRow}>
+          <Text
+            style={[
+              styles.lastMessage,
+              item.unreadCount > 0 && { fontWeight: '600', color: '#000' },
+            ]}
+            numberOfLines={1}
+          >
+            {item.lastMessage}
+          </Text>
+
+          {item.unreadCount > 0 && (
+            <View style={styles.unreadBadge}>
+              <Text style={styles.unreadText}>{item.unreadCount}</Text>
+            </View>
+          )}
+        </View>
+      </View>
+    </TouchableOpacity>
+  )
+}
+      />
+    </SafeAreaView >
   )
 }
 
@@ -175,4 +317,78 @@ const styles = StyleSheet.create({
   cardContent: { padding: 12 },
   cardTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 4 },
   cardSubtitle: { fontSize: 14, color: 'gray' },
+  chatItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+
+  avatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+  },
+
+  onlineIndicator: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#22c55e',
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    borderWidth: 2,
+    borderColor: 'white',
+  },
+
+  chatContent: {
+    flex: 1,
+    marginLeft: 12,
+  },
+
+  chatHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+
+  chatName: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+
+  chatTime: {
+    fontSize: 12,
+    color: 'gray',
+  },
+
+  messageRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+
+  lastMessage: {
+    flex: 1,
+    color: 'gray',
+    marginRight: 8,
+  },
+
+  unreadBadge: {
+    backgroundColor: '#2563eb',
+    borderRadius: 12,
+    minWidth: 22,
+    height: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 6,
+  },
+
+  unreadText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '600',
+  },
 });
