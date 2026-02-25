@@ -1,0 +1,32 @@
+# Node modules
+ccsHub/node_modules/
+
+# Expo
+ccsHub/.expo/
+ccsHub/dist/
+ccsHub/web-build/
+ccsHub/expo-env.d.ts
+
+# Native / sensitive
+ccsHub/ios/
+ccsHub/android/
+ccsHub/*.jks
+ccsHub/*.p8
+ccsHub/*.p12
+ccsHub/*.key
+ccsHub/*.mobileprovision
+ccsHub/*.orig.*
+
+# Metro / caches
+ccsHub/.metro-health-check*
+ccsHub/*.tsbuildinfo
+
+# Debug / logs
+ccsHub/npm-debug.*
+ccsHub/yarn-debug.*
+ccsHub/yarn-error.*
+
+# OS / env
+ccsHub/.DS_Store
+ccsHub/*.pem
+ccsHub/.env*.local
