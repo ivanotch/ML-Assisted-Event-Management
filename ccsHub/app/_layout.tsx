@@ -22,6 +22,7 @@ export default function RootLayout() {
             <Stack.Screen name='leaderboard' options={{
                 headerTitleAlign: "center",
             }}/>
+            <Stack.Screen name="event" options={{ headerShown: false }} />
         </Stack>
     );
 }

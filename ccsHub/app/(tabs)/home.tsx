@@ -130,7 +130,10 @@ export default function Home() {
     }).filter(event => event.title.toLowerCase().includes(search.toLowerCase()));
 
     const renderEvent = ({ item }: { item: typeof mockEvents[0] }) => (
-        <TouchableOpacity style={styles.card} onPress={() => alert(`Clicked: ${item.title}`)}>
+        <TouchableOpacity style={styles.card} onPress={() => router.push({
+            pathname: '/event/[id]',
+            params: {id: item.id}
+        })}>
             <Image source={{ uri: item.image }} style={styles.cardImage} />
             <View style={styles.cardContent}>
                 <Text style={styles.cardTitle}>{item.title}</Text>
