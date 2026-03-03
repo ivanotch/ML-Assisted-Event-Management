@@ -1,13 +1,14 @@
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import React, { useState } from "react";
+import React, { act, useState } from "react";
 import { FlatList, StyleSheet, Text, View, TouchableOpacity, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import SimpleLineIcons from '@expo/vector-icons/SimpleLineIcons';
 import EvilIcons from '@expo/vector-icons/EvilIcons';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 
 type tabType = {
     label: string;
@@ -24,6 +25,7 @@ const ranking = [
         place: "2nd",
         height: 120,
         color: "#C0C0C0",
+        points: 10,
         image: "https://i.pravatar.cc/150?img=5",
     },
     {
@@ -31,12 +33,14 @@ const ranking = [
         place: "1st",
         height: 180,
         color: "#FFD700",
+        points: 10,
         image: "https://i.pravatar.cc/150?img=3",
     },
     {
         name: "Mike",
         place: "3rd",
         height: 100,
+        points: 10,
         color: "#CD7F32",
         image: "https://i.pravatar.cc/150?img=8",
     },
@@ -44,6 +48,7 @@ const ranking = [
         name: "james",
         place: "3rd",
         height: 100,
+        points: 10,
         color: "#CD7F32",
         image: "https://i.pravatar.cc/150?img=8",
     },
@@ -53,6 +58,7 @@ const ranking = [
         height: 100,
         color: "#CD7F32",
         image: "https://i.pravatar.cc/150?img=8",
+        points: 20,
     },
     {
         name: "maine",
@@ -60,6 +66,7 @@ const ranking = [
         height: 100,
         color: "#CD7F32",
         image: "https://i.pravatar.cc/150?img=8",
+        points: 20,
     },
     {
         name: "johnny",
@@ -67,6 +74,7 @@ const ranking = [
         height: 100,
         color: "#CD7F32",
         image: "https://i.pravatar.cc/150?img=8",
+        points: 20,
     },
     {
         name: "kate",
@@ -74,6 +82,7 @@ const ranking = [
         height: 100,
         color: "#CD7F32",
         image: "https://i.pravatar.cc/150?img=8",
+        points: 20,
     },
     {
         name: "ivan",
@@ -81,6 +90,7 @@ const ranking = [
         height: 100,
         color: "#CD7F32",
         image: "https://i.pravatar.cc/150?img=8",
+        points: 20,
     },
     {
         name: "kael",
@@ -88,6 +98,7 @@ const ranking = [
         height: 100,
         color: "#CD7F32",
         image: "https://i.pravatar.cc/150?img=8",
+        points: 20,
     },
     {
         name: "israel",
@@ -95,6 +106,7 @@ const ranking = [
         height: 100,
         color: "#CD7F32",
         image: "https://i.pravatar.cc/150?img=8",
+        points: 20,
     },
     {
         name: "gab",
@@ -102,6 +114,7 @@ const ranking = [
         height: 100,
         color: "#CD7F32",
         image: "https://i.pravatar.cc/150?img=8",
+        points: 20,
     },
     {
         name: "adrian",
@@ -109,6 +122,7 @@ const ranking = [
         height: 100,
         color: "#CD7F32",
         image: "https://i.pravatar.cc/150?img=8",
+        points: 20,
     },
     {
         name: "hael",
@@ -116,6 +130,7 @@ const ranking = [
         height: 100,
         color: "#CD7F32",
         image: "https://i.pravatar.cc/150?img=8",
+        points: 20,
     },
 ]
 
@@ -166,97 +181,159 @@ export default function Leaderboard() {
                     })}
                 </View>
 
-                <View>
-                    <Text style={{ fontWeight: '600', fontSize: 15, color: '#808080' }}>
-                        MY PROGRESS
-                    </Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly', gap: 20, paddingHorizontal: 20, paddingVertical: 25, borderWidth: 2, borderRadius: 15, marginTop: 15 }}>
-                        <View style={{ flex: 1, gap: 5 }}>
-                            <View style={styles.progressBarContainer}>
-                                <View style={[styles.progressBarFill, { width: `${progress * 100}%` }]} />
-                            </View>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-                                <MaterialCommunityIcons name="progress-star-four-points" size={20} color="#FF9800" />
-                                <View style={{ flexDirection: 'row' }}>
-                                    <Text>10</Text>
-                                    <Text>/</Text>
-                                    <Text>10</Text>
+                {activeTab === "All Time Ranking" ? (
+                    <>
+                        <View>
+                            <Text style={{ fontWeight: '600', fontSize: 15, color: '#808080' }}>
+                                MY PROGRESS
+                            </Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly', gap: 20, paddingHorizontal: 20, paddingVertical: 25, borderWidth: 2, borderRadius: 15, marginTop: 15 }}>
+                                <View style={{ flex: 1, gap: 5 }}>
+                                    <View style={styles.progressBarContainer}>
+                                        <View style={[styles.progressBarFill, { width: `${progress * 100}%` }]} />
+                                    </View>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                                        <MaterialCommunityIcons name="progress-star-four-points" size={20} color="#FF9800" />
+                                        <View style={{ flexDirection: 'row' }}>
+                                            <Text>10</Text>
+                                            <Text>/</Text>
+                                            <Text>10</Text>
+                                        </View>
+                                    </View>
+                                </View>
+
+                                <View style={{ flex: 1, gap: 5 }}>
+                                    <View style={styles.progressBarContainer}>
+                                        <View style={[styles.progressBarFillGame, { width: `${progress * 100}%` }]} />
+                                    </View>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                                        <SimpleLineIcons name="game-controller" size={20} color="#6a5acd" />
+                                        <View style={{ flexDirection: 'row' }}>
+                                            <Text>10</Text>
+                                            <Text>/</Text>
+                                            <Text>10</Text>
+                                        </View>
+                                    </View>
+                                </View>
+
+                                <View style={{ flex: 1, gap: 5 }}>
+                                    <View style={styles.progressBarContainer}>
+                                        <View style={[styles.progressBarFillTrophy, { width: `${progress * 100}%` }]} />
+                                    </View>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                                        <EvilIcons name="trophy" size={20} color="#32cd32" />
+                                        <View style={{ flexDirection: 'row' }}>
+                                            <Text>10</Text>
+                                            <Text>/</Text>
+                                            <Text>10</Text>
+                                        </View>
+                                    </View>
                                 </View>
                             </View>
                         </View>
 
-                        <View style={{ flex: 1, gap: 5 }}>
-                            <View style={styles.progressBarContainer}>
-                                <View style={[styles.progressBarFillGame, { width: `${progress * 100}%` }]} />
-                            </View>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-                                <SimpleLineIcons name="game-controller" size={20} color="#6a5acd" />
-                                <View style={{ flexDirection: 'row' }}>
-                                    <Text>10</Text>
-                                    <Text>/</Text>
-                                    <Text>10</Text>
-                                </View>
-                            </View>
-                        </View>
+                        <FlatList
+                            data={others}
+                            keyExtractor={(item, index) => index.toString()}
+                            showsVerticalScrollIndicator={false}
+                            contentContainerStyle={{ paddingBottom: 30, gap: 10 }}
+                            ListHeaderComponent={() => {
+                                {/* ranking */ }
+                                return (
+                                    <View style={styles.rankingContainer}>
+                                        <View style={styles.rankingRow}>
+                                            {
+                                                topThree.map((item, index) => (
+                                                    <View key={index} style={styles.rankingItem}>
+                                                        <Image source={{ uri: item.image }} style={styles.avatar} />
 
-                        <View style={{ flex: 1, gap: 5 }}>
-                            <View style={styles.progressBarContainer}>
-                                <View style={[styles.progressBarFillTrophy, { width: `${progress * 100}%` }]} />
-                            </View>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-                                <EvilIcons name="trophy" size={20} color="#32cd32" />
-                                <View style={{ flexDirection: 'row' }}>
-                                    <Text>10</Text>
-                                    <Text>/</Text>
-                                    <Text>10</Text>
-                                </View>
-                            </View>
-                        </View>
-                    </View>
-                </View>
+                                                        <Text style={styles.name}>{item.name}</Text>
 
-                {/* ranking */}
-                <View style={styles.rankingContainer}>
-                    <View style={styles.rankingRow}>
-                        {
-                            topThree.map((item, index) => (
-                                <View key={index} style={styles.rankingItem}>
-                                    <Image source={{ uri: item.image }} style={styles.avatar} />
-
-                                    <Text style={styles.name}>{item.name}</Text>
-
-                                    <View
-                                        style={[styles.bar, { height: item.height, backgroundColor: item.color }]}
-                                    >
-                                        <Text style={styles.place}>{item.place}</Text>
+                                                        <View
+                                                            style={[styles.bar, { height: item.height, backgroundColor: item.color }]}
+                                                        >
+                                                            <Text style={styles.place}>{item.place}</Text>
+                                                        </View>
+                                                    </View>
+                                                ))
+                                            }
+                                        </View>
+                                    </View>
+                                )
+                            }}
+                            renderItem={({ item, index }) => (
+                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderWidth: 1, padding: 10, borderRadius: 10 }}>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                                        <Text style={{ fontSize: 17, fontWeight: '500', color: 'gray' }}>
+                                            {index + 4}
+                                        </Text>
+                                        <Image
+                                            style={{ width: 40, height: 40, borderRadius: 35 }}
+                                            source={{ uri: item.image }}
+                                        />
+                                        <Text style={{ fontWeight: '600', fontSize: 16 }}>{item.name}</Text>
                                     </View>
 
-
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, alignContent: 'center', marginRight: 10 }}>
+                                        <Text style={{ fontWeight: '500', fontSize: 17 }}>{item.points}</Text>
+                                        <MaterialIcons name="stars" size={23} color="#CD7F32" />
+                                    </View>
                                 </View>
-                            ))
+                            )}
+                        />
+                    </>
+                ) : (
+                    <FlatList
+                        data={others}
+                        keyExtractor={(item, index) => index.toString()}
+                        showsVerticalScrollIndicator={false}
+                        contentContainerStyle={{ paddingBottom: 30 }}
+                        ListHeaderComponent={
+                            <View style={{ gap: 10 }}>
+                                {topThree.map((item, index) => (
+                                    <View key={index} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderWidth: 1, padding: 10, borderRadius: 10, borderColor: '#CD7F32' }}>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                                            <Text style={{ fontSize: 17, fontWeight: '500', color: '#CD7F32' }}>
+                                                {index + 1}
+                                            </Text>
+                                            <Image
+                                                style={{ width: 40, height: 40, borderRadius: 35, borderWidth: 2, borderColor: '#CD7F32' }}
+                                                source={{ uri: item.image }}
+                                            />
+                                            <Text style={{ fontWeight: '600', fontSize: 16 }}>{item.name}</Text>
+                                        </View>
+
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, alignContent: 'center', marginRight: 10 }}>
+                                            <Text style={{ fontWeight: '500', fontSize: 17 }}>{item.points}</Text>
+                                            <MaterialIcons name="stars" size={23} color="#CD7F32" />
+                                        </View>
+                                    </View>
+                                ))}
+                            </View>
                         }
-                    </View>
-                </View>
+                        renderItem={({ item, index }) => (
+                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderWidth: 1, padding: 10, borderRadius: 10, marginTop: 10 }}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                                    <Text style={{ fontSize: 17, fontWeight: '500', color: 'gray' }}>
+                                        {index + 4}
+                                    </Text>
+                                    <Image
+                                        style={{ width: 40, height: 40, borderRadius: 35 }}
+                                        source={{ uri: item.image }}
+                                    />
+                                    <Text style={{ fontWeight: '600', fontSize: 16 }}>{item.name}</Text>
+                                </View>
 
-                <FlatList 
-                    data={others}
-                    keyExtractor={(item, index) => index.toString()}
-                    showsVerticalScrollIndicator={false}
-                    contentContainerStyle={{paddingBottom: 100}}
-                    renderItem={({item, index}) => (
-                        <View>
-                            <Text>
-                                {index + 4}
-                            </Text>
-                            <Image 
-                                source={{uri: item.image}}
-                            />
-                            <Text>{item.name}</Text>
-                        </View>
-                    )}
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, alignContent: 'center', marginRight: 10 }}>
+                                    <Text style={{ fontWeight: '500', fontSize: 17 }}>{item.points}</Text>
+                                    <MaterialIcons name="stars" size={23} color="#CD7F32" />
+                                </View>
+                            </View>
+                        )}
+                    />
+                )}
 
 
-                />
 
             </View>
         </SafeAreaView>
@@ -335,7 +412,7 @@ const styles = StyleSheet.create({
         alignContent: 'center',
         borderWidth: 1,
         borderRadius: 15,
-        marginTop: 30,
+        marginTop: 20,
         paddingTop: 20,
         paddingBottom: 5
     },

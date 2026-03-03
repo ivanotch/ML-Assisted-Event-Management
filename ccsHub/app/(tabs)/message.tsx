@@ -109,8 +109,7 @@ function message() {
 
     return MESSAGES.filter((item) => {
       const matchesSearch =
-        item.name.toLowerCase().includes(searchText) ||
-        item.lastMessage.toLowerCase().includes(searchText);
+        item.name.toLowerCase().includes(searchText) || item.lastMessage.toLowerCase().includes(searchText);
 
       const matchesTab =
         (activeTab === 'Messages' && item.type === 'message') ||
@@ -182,38 +181,38 @@ function message() {
               params: { id: item.id },
             })}
           >
-      <View style={{ position: 'relative' }}>
-        <Image source={{ uri: item.avatar }} style={styles.avatar} />
-        {item.isOnline && <View style={styles.onlineIndicator} />}
-      </View>
-
-      <View style={styles.chatContent}>
-        <View style={styles.chatHeader}>
-          <Text style={styles.chatName}>{item.name}</Text>
-          <Text style={styles.chatTime}>{item.time}</Text>
-        </View>
-
-        <View style={styles.messageRow}>
-          <Text
-            style={[
-              styles.lastMessage,
-              item.unreadCount > 0 && { fontWeight: '600', color: '#000' },
-            ]}
-            numberOfLines={1}
-          >
-            {item.lastMessage}
-          </Text>
-
-          {item.unreadCount > 0 && (
-            <View style={styles.unreadBadge}>
-              <Text style={styles.unreadText}>{item.unreadCount}</Text>
+            <View style={{ position: 'relative' }}>
+              <Image source={{ uri: item.avatar }} style={styles.avatar} />
+              {item.isOnline && <View style={styles.onlineIndicator} />}
             </View>
-          )}
-        </View>
-      </View>
-    </TouchableOpacity>
-  )
-}
+
+            <View style={styles.chatContent}>
+              <View style={styles.chatHeader}>
+                <Text style={styles.chatName}>{item.name}</Text>
+                <Text style={styles.chatTime}>{item.time}</Text>
+              </View>
+
+              <View style={styles.messageRow}>
+                <Text
+                  style={[
+                    styles.lastMessage,
+                    item.unreadCount > 0 && { fontWeight: '600', color: '#000' },
+                  ]}
+                  numberOfLines={1}
+                >
+                  {item.lastMessage}
+                </Text>
+
+                {item.unreadCount > 0 && (
+                  <View style={styles.unreadBadge}>
+                    <Text style={styles.unreadText}>{item.unreadCount}</Text>
+                  </View>
+                )}
+              </View>
+            </View>
+          </TouchableOpacity>
+        )
+        }
       />
     </SafeAreaView >
   )
