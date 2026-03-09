@@ -30,3 +30,25 @@ ccsHub/yarn-error.*
 ccsHub/.DS_Store
 ccsHub/*.pem
 ccsHub/.env*.local
+
+
+
+# admin ignore
+/ccshubadmin/node_modules/
+/ccshubadmin/.next/
+/ccshubadmin/out/
+/ccshubadmin/build/
+/ccshubadmin/coverage/
+/ccshubadmin/.env*
+/ccshubadmin/.vercel
+/ccshubadmin/*.tsbuildinfo
+/ccshubadmin/next-env.d.ts
+
+# logs
+/ccshubadmin/npm-debug.log*
+/ccshubadmin/yarn-debug.log*
+/ccshubadmin/yarn-error.log*
+
+# misc
+.DS_Store
+*.pem

@@ -1,8 +1,8 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-
-
+import {Stack} from 'expo-router';
 import {
+  Image,
   FlatList,
   KeyboardAvoidingView,
   Platform,
@@ -64,52 +64,73 @@ export default function ChatScreen() {
     setInput('');
   };
 
-  return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: '#fff' }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={90}
-    >
-      {/* Messages */}
-      <FlatList
-        ref={flatListRef}
-        data={messages}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={{ padding: 12 }}
-        renderItem={({ item }) => (
-          <View
-            style={[
-              styles.messageContainer,
-              item.sender === 'me'
-                ? styles.myMessage
-                : styles.otherMessage,
-            ]}
-          >
-            <Text
-              style={{
-                color: item.sender === 'me' ? 'white' : 'black',
-              }}
-            >
-              {item.text}
-            </Text>
-          </View>
-        )}
-      />
+  const user = {
+    name: "John Doe",
+    profilePic: "https://i.pravatar.cc/150?img=3",
+  };
 
-      {/* Input Area */}
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Type a message..."
-          value={input}
-          onChangeText={setInput}
+  return (
+    <>
+      <Stack.Screen options={{
+        headerTitle: () => (
+          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <Image
+                source={{uri: user.profilePic}}
+                style={{width: 35, height: 35, borderRadius: 50, marginRight: 10}}
+              />
+              <Text style={{fontSize: 18, fontWeight: '600'}}>
+                {user.name}
+              </Text>
+          </View>
+        )
+      }} />
+
+      <KeyboardAvoidingView
+        style={{ flex: 1, backgroundColor: '#fff' }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={90}
+      >
+        {/* Messages */}
+        <FlatList
+          ref={flatListRef}
+          data={messages}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={{ padding: 12 }}
+          renderItem={({ item }) => (
+            <View
+              style={[
+                styles.messageContainer,
+                item.sender === 'me'
+                  ? styles.myMessage
+                  : styles.otherMessage,
+              ]}
+            >
+              <Text
+                style={{
+                  color: item.sender === 'me' ? 'white' : 'black',
+                }}
+              >
+                {item.text}
+              </Text>
+            </View>
+          )}
         />
 
-        <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
-          <Ionicons name="send" size={18} color="white" />
-        </TouchableOpacity>
-      </View>
-    </KeyboardAvoidingView>
+        {/* Input Area */}
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="Type a message..."
+            value={input}
+            onChangeText={setInput}
+          />
+
+          <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
+            <Ionicons name="send" size={18} color="white" />
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
+    </>
   );
 }
 
