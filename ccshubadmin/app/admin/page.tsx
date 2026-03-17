@@ -13,6 +13,13 @@ import {
 } from "@/components/ui/select"
 import { useState } from "react"
 import SentimentBar from "@/component/graphs/SentimentBar"
+import SentimentLineChart from "@/component/graphs/SentimentTrend"
+import WordCloudSentiment from "@/component/graphs/WordCloud"
+import FeedbackVsAttendance from "@/component/graphs/FeedbackVsAttendance"
+import RiskFactorPie from "@/component/graphs/RiskPie"
+import AttendancePredictionTable from "@/component/graphs/AttendancePrediction"
+import HistoricalAttendance from "@/component/graphs/HistoricalAttendance"
+import TopEventsTable from "@/component/graphs/EventPerformance"
 
 export default function Dashboard() {
   const [selected, setSelected] = useState("all")
@@ -87,7 +94,22 @@ export default function Dashboard() {
         <div className="col-span-4">
           <SentimentBar data={data.sentimentDistribution} />
         </div>
+      </div>
 
+      <div className="grid grid-cols-2 gap-5">
+        <SentimentLineChart data={allEvents.sentimentTrend} />
+        <WordCloudSentiment data={allEvents.keywordExtraction} />
+      </div>
+
+      <div className="grid grid-cols-3 gap-3">
+        <FeedbackVsAttendance data={allEvents.feedbackVsAttendance} />
+        <RiskFactorPie data={allEvents.riskFactorSummary} />
+        <AttendancePredictionTable data={allEvents.attendancePredictionAccuracy} />
+      </div>
+
+      <div className="grid grid-cols-2 gap-5">
+        <HistoricalAttendance data={allEvents.historicalAttendance} />
+        <TopEventsTable data={allEvents.topEvents} />
       </div>
     </main>
   )

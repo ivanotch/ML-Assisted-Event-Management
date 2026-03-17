@@ -26,13 +26,13 @@ export const allEvents = {
   ],
 
   keywordExtraction: [
-    { type: "positive", word: "organized", count: 88 },
-    { type: "positive", word: "informative", count: 75 },
-    { type: "positive", word: "engaging", count: 61 },
-    { type: "positive", word: "fun", count: 55 },
-    { type: "negative", word: "late", count: 32 },
-    { type: "negative", word: "crowded", count: 21 },
-    { type: "negative", word: "audio", count: 18 }
+    { type: "positive", text: "organized", value: 880 },
+    { type: "positive", text: "informative", value: 750 },
+    { type: "positive", text: "engaging", value: 610 },
+    { type: "positive", text: "fun", value: 550 },
+    { type: "negative", text: "late", value: 320 },
+    { type: "negative", text: "crowded", value: 210 },
+    { type: "negative", text: "audio", value: 180 }
   ],
 
   feedbackVsAttendance: [
