@@ -32,7 +32,7 @@ export default function SideBar() {
 
 
     return (
-        <aside className="w-[260px] h-screen bg-gray-100 flex flex-col justify-between">
+        <aside className="w-64 h-screen bg-gray-100 flex flex-col justify-between">
 
             {/* Top Section */}
             <div>
