@@ -38,7 +38,7 @@ export default function SideBar() {
             <div>
 
                 {/* Logo */}
-                <div className="flex items-center gap-3 px-6 py-6 border-b">
+                <div className="flex items-center gap-3 px-6 py-4 border-b-1">
                     <Image
                         src="/ccslogo.jpg"
                         alt="ccs logo"

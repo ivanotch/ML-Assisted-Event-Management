@@ -11,7 +11,7 @@ const user = {
 export default function Header() {
     const profileImage = user?.profileImage || "/placeholder-avatar.png";
     return (
-        <header className="w-full px-6 py-4 flex items-center justify-between bg-white">
+        <header className="w-full px-6 py-4 flex items-center justify-between bg-white border-b-1">
 
             {/* Search Bar */}
             <div className="relative w-[350px]">
