@@ -5,7 +5,7 @@ import { Plus } from 'lucide-react'
 
 import { mockEvents } from '@/mock/mockEvent'
 import EventCard from './Card'
-import SearchBar from './SearchBar'
+import SearchBar from '../../../component/SearchBar'
 
 export default function Events() {
     const [events] = useState(mockEvents)

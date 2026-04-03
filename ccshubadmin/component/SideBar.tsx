@@ -27,7 +27,7 @@ export default function SideBar() {
         { name: "Feedback", href: "/admin/feedback", icon: MessageSquare },
         { name: "Inbox", href: "/admin/inbox", icon: Inbox },
         { name: "Messages", href: "/admin/messages", icon: Mail },
-        { name: "Event History", href: "/admin/event-history", icon: History },
+        { name: "Event History", href: "/admin/history", icon: History },
     ]
 
 
