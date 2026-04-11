@@ -1,58 +1,38 @@
-'use client'
-import React, { useState, useMemo } from 'react'
-import { Button } from '@/components/ui/button'
-import { Plus } from 'lucide-react'
 
-import { mockEvents } from '@/mock/mockEvent'
-import EventCard from './Card'
-import SearchBar from '../../../component/SearchBar'
+import EventClient from './EventClient'
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { Event } from "@/types/events"
+import { Timestamp } from "firebase/firestore"
 
-export default function Events() {
-    const [events] = useState(mockEvents)
-    const [search, setSearch] = useState('')
+export default async function Page() {
+    const snapshot = await getDocs(collection(db, "events"))
 
-    // ✅ optimized filtering
-    const filteredEvents = useMemo(() => {
-        return events.filter((e) => {
-            const matchesSearch = e.title.toLowerCase().includes(search.toLowerCase())
-            const notEnded = e.status !== 'Ended'
-            return matchesSearch && notEnded
-        })
-    }, [events, search])
+    const events: Event[] = snapshot.docs.map(doc => {
+        const data = doc.data()
 
-    return (
-        <div className="px-10 pt-5">
-            
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold">Manage Events</h1>
-                    <p className="text-gray-600">Create, view and manage CCS events.</p>
-                </div>
+        return {
+            id: doc.id,
+            title: data.title ?? '',
+            description: data.description ?? '',
+            date: data.date ?? '',
+            start_time: data.start_time ?? '',
+            end_time: data.end_time ?? '',
+            imageUrl: data.imageUrl ?? '',
+            price: data.price ?? 0,
+            department: data.department ?? '',
+            participant_type: data.participant_type ?? '',
+            location: data.location ?? '',
+            requirements: data.requirements ?? '',
+            attendeesLimit: data.attendeesLimit ?? null,
+            status: data.status ?? 'Upcoming',
 
-                <Button className="bg-blue-700 flex items-center gap-2 text-lg p-5">
-                    <Plus />
-                    Add Event
-                </Button>
-            </div>
+            // ✅ FIX HERE
+            createdAt: data.createdAt instanceof Timestamp
+                ? data.createdAt.toDate().toISOString()
+                : null
+        }
+    })
 
-            {/* Search */}
-            <div className="mt-6 flex justify-between items-center">
-                <SearchBar value={search} onChange={setSearch} />
-            </div>
-
-            {/* Events Grid */}
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredEvents.length > 0 ? (
-                    filteredEvents.map((event) => (
-                        <EventCard key={event.id} event={event} />
-                    ))
-                ) : (
-                    <p className="text-gray-500 col-span-full text-center">
-                        No events found.
-                    </p>
-                )}
-            </div>
-        </div>
-    )
+    return <EventClient initialEvents={events} />
 }
