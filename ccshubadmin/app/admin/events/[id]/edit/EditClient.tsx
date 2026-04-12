@@ -4,8 +4,12 @@ import { ArrowLeft, Calendar, Clock, MapPin, GraduationCap, Users } from 'lucide
 import Link from "next/link"
 import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
+import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage"
+import { storage } from "@/lib/firebase";
 import { Event } from "@/types/events"
 import { useActionState } from "react"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 
 type FormState = {
     success: boolean
@@ -17,10 +21,47 @@ const initialState: FormState = {
 }
 
 export default function EditEventForm({ event }: { event: Event }) {
-    const [state, formAction] = useActionState(updateEvent, initialState)
+    const [imageFile, setImageFile] = useState<File | null>(null)
+    const router = useRouter();
 
     return (
-        <form action={formAction} className="max-w-5xl mx-auto px-6 py-8 space-y-8 font-[inter]">
+        <form
+            action={async (formData) => {
+                let imageUrl = event.imageUrl
+                formData.delete("image")
+
+                // 🔥 if new image selected
+                if (imageFile) {
+                    // 1. Upload new image
+                    const storageRef = ref(
+                        storage,
+                        `events/${Date.now()}-${imageFile.name}`
+                    )
+
+                    await uploadBytes(storageRef, imageFile)
+                    const newUrl = await getDownloadURL(storageRef)
+
+                    // 2. Delete OLD image (only after success)
+                    if (event.imageUrl) {
+                        try {
+                            const oldRef = ref(storage, event.imageUrl)
+                            await deleteObject(oldRef)
+                        } catch (err) {
+                            console.warn("Old image delete failed:", err)
+                        }
+                    }
+
+                    imageUrl = newUrl
+                }
+
+                formData.set("imageUrl", imageUrl)
+
+                await updateEvent(formData)
+
+                router.refresh()
+                router.push(`/admin/events/${event.id}`)
+            }}
+            className="max-w-5xl mx-auto px-6 py-8 space-y-8 font-[inter]">
 
             <input type="hidden" name="id" value={event.id} />
 
@@ -56,7 +97,15 @@ export default function EditEventForm({ event }: { event: Event }) {
                 {/* Upload Button */}
                 <label className="absolute inset-0 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition cursor-pointer">
                     Change Image
-                    <input type="file" name="image" className="hidden" />
+                    <input
+                        type="file"
+                        name="image"
+                        className="hidden"
+                        onChange={(e) => {
+                            const file = e.target.files?.[0]
+                            if (file) setImageFile(file)
+                        }}
+                    />
                 </label>
 
                 {/* Editable Title */}

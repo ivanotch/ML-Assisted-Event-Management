@@ -112,24 +112,50 @@ export async function deleteEvent(id: string, imageUrl?: string) {
 }
 
 export async function updateEvent(
-  prevState: any,
   formData: FormData
 ) {
   try {
     const id = String(formData.get("id"))
 
-    await updateDoc(doc(db, "events", id), {
-      title: formData.get("title"),
-      description: formData.get("description"),
-      date: formData.get("date"),
-      start_time: formData.get("start_in"),
-      end_time: formData.get("end_in"),
-      location: formData.get("location"),
+    // 🔹 Get form values
+    const title = formData.get("title") as string
+    const description = formData.get("description") as string
+    const date = formData.get("date") as string
+    const start_time = formData.get("start_in") as string
+    const end_time = formData.get("end_in") as string
+    const location = formData.get("location") as string
+    const requirements = formData.get("requirements") as string
+    const department = formData.get("department") as string
+    const participant_type = formData.get("participant_type") as string
+    const price = Number(formData.get("price"))
+    const imageUrl = formData.get("imageUrl")
+
+    // 🔹 Build update object
+    const updateData: any = {
+      title,
+      description,
+      date,
+      start_time,
+      end_time,
+      location,
+      requirements,
+      department,
+      participant_type,
+      price,
       updatedAt: new Date(),
-    })
+    }
+
+    // Only update image if new one exists
+    if (imageUrl) {
+      updateData.imageUrl = imageUrl
+    }
+
+    // 🔹 Update Firestore
+    await updateDoc(doc(db, "events", id), updateData)
 
     return { success: true }
   } catch (error) {
+    console.error(error)
     return { success: false, error: "Update failed" }
   }
 }

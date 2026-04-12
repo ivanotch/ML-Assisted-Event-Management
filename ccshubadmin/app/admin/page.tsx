@@ -73,7 +73,7 @@ export default function Dashboard() {
           </div>
 
           {/* Bottom KPI (4 cards) */}
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-4 gap-4 ">
             {bottomKPI.map((item) => {
               const config =
                 kpiConfig[item.key as keyof typeof kpiConfig]
@@ -91,23 +91,23 @@ export default function Dashboard() {
         </div>
 
         {/* RIGHT: Graph */}
-        <div className="col-span-4">
+        <div className="col-span-4 h-[350px]">
           <SentimentBar data={data.sentimentDistribution} />
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-5">
+      <div className="grid grid-cols-2 gap-5 h-[400px]">
         <SentimentLineChart data={allEvents.sentimentTrend} />
         <WordCloudSentiment data={allEvents.keywordExtraction} />
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-3 h-[400px]">
         <FeedbackVsAttendance data={allEvents.feedbackVsAttendance} />
         <RiskFactorPie data={allEvents.riskFactorSummary} />
         <AttendancePredictionTable data={allEvents.attendancePredictionAccuracy} />
       </div>
 
-      <div className="grid grid-cols-2 gap-5">
+      <div className="grid grid-cols-2 gap-5 h-[400px]">
         <HistoricalAttendance data={allEvents.historicalAttendance} />
         <TopEventsTable data={allEvents.topEvents} />
       </div>
