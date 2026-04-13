@@ -53,7 +53,7 @@ export default function SideBar() {
                 <nav className="mt-6 flex flex-col gap-2 px-4">
                     {navItem.map((item) => {
                         const Icon = item.icon;
-                        const isActive = pathname.startsWith(item.href);
+                        const isActive = pathname === item.href;
 
                         return (
                             <Link key={item.name} href={item.href} className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${isActive ? 'bg-blue-600 text-white font-medium' : "hover:bg-gray-300 text-gray-700"}`}>

@@ -4,7 +4,17 @@ import { Trash2 } from "lucide-react"
 import { deleteEvent } from "@/app/actions/eventActions"
 import { useRouter } from "next/navigation"
 
-export default function DeleteButton({ id, imageUrl }: { id: string, imageUrl: string }) {
+export default function DeleteButton({
+  id,
+  imageUrl,
+  className = "",
+  iconClassName = ""
+}: {
+  id: string
+  imageUrl: string
+  className?: string
+  iconClassName?: string
+}) {
   const router = useRouter()
 
   const handleDelete = async () => {
@@ -22,10 +32,14 @@ export default function DeleteButton({ id, imageUrl }: { id: string, imageUrl: s
 
   return (
     <button
-      onClick={handleDelete}
-      className="border rounded-lg p-1 hover:bg-red-50 transition"
+      onClick={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        handleDelete()
+      }}
+      className={` ${className}`}
     >
-      <Trash2 className="text-red-700" />
+      <Trash2 className={`${iconClassName}`} />
     </button>
   )
 }

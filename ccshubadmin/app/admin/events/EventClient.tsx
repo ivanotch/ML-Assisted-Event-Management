@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
@@ -20,6 +20,10 @@ export default function EventClient({ initialEvents }: {initialEvents: Event[]})
     const [uploading, setUploading] = useState(false);
     const [imageUrl, setImageUrl] = useState('')
     const [imageFile, setImageFile] = useState<File | null>(null)
+
+    useEffect(() => {
+        setEvents(initialEvents)
+    }, [initialEvents])
 
 
     // ✅ optimized filtering
@@ -102,8 +106,8 @@ export default function EventClient({ initialEvents }: {initialEvents: Event[]})
 
                             {/* Time */}
                             <div className="flex gap-2">
-                                <input name='start_in' type="time" className="w-full border p-2 rounded" />
-                                <input name='end_in' type="time" className="w-full border p-2 rounded" />
+                                <input name='start_time' type="time" className="w-full border p-2 rounded" />
+                                <input name='end_time' type="time" className="w-full border p-2 rounded" />
                             </div>
 
                             {/* Image */}

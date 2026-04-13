@@ -3,7 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowLeft, Calendar, Clock, MapPin, GraduationCap, Users, SquarePen, Trash2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import DeleteButton from "./DeleteBtn"
+import DeleteButton from "../DeleteBtn"
 
 export default async function EventDetails({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -24,7 +24,7 @@ export default async function EventDetails({ params }: { params: Promise<{ id: s
                     <Link href={`/admin/events/${event.id}/edit`} className="border rounded-lg p-1 hover:bg-blue-50 transition">
                         <SquarePen className='text-blue-700' />
                     </Link>
-                    <DeleteButton id={event.id} imageUrl={event.imageUrl} />
+                    <DeleteButton iconClassName={'text-red-700'} className={'border rounded-lg p-1 hover:bg-red-50 transition'} id={event.id} imageUrl={event.imageUrl} />
                 </div>
             </div>
 

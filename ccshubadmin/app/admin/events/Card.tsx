@@ -4,9 +4,11 @@ import { CalendarDays, Clock10, MapPin, SquarePen, Trash2 } from 'lucide-react'
 import Image from "next/image"
 import { Event } from "@/types/events"
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import DeleteButton from './DeleteBtn'
 
 export default function EventCard({ event }: { event: Event }) {
-    
+    const router = useRouter()
 
     return (
         <Link href={`/admin/events/${event.id}`}>
@@ -61,12 +63,14 @@ export default function EventCard({ event }: { event: Event }) {
 
                     {/* Actions */}
                     <div className="mt-6 pt-4 border-t flex justify-end gap-2">
-                        <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg">
+                        <button onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            router.push(`/admin/events/${event.id}/edit`)
+                        }} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg z-10">
                             <SquarePen className="h-4 w-4" />
                         </button>
-                        <button className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg">
-                            <Trash2 className="h-4 w-4" />
-                        </button>
+                        <DeleteButton iconClassName={'h-4 w-4'} className={'p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg'} id={event.id} imageUrl={event.imageUrl} />
                     </div>
                 </div>
             </div>
