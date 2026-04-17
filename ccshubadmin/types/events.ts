@@ -1,4 +1,4 @@
-import { Timestamp } from "firebase/firestore"
+import { Timestamp, DocumentReference } from "firebase/firestore"
 
 export type Event = {
   id: string
@@ -16,4 +16,8 @@ export type Event = {
   attendeesLimit: number | null
   status: string
   createdAt: string | null
-} 
+
+  // ✅ NEW
+  school_year_id: string | null
+  school_year_ref: DocumentReference | null
+}

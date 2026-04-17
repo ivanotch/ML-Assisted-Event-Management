@@ -7,23 +7,17 @@ import { createEvents } from '@/app/actions/eventActions'
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 import { storage } from "@/lib/firebase";
 import { Event } from '@/types/events'
-
-import { mockEvents } from '@/mock/mockEvent'
 import EventCard from './Card'
 import SearchBar from '../../../component/SearchBar'
+import { SchoolYears } from '@/types/schoolyears'
 
-export default function EventClient({ initialEvents }: {initialEvents: Event[]}) {
+export default function EventClient({ initialEvents, schoolYears }: { initialEvents: Event[], schoolYears: SchoolYears[] }) {
     const [events, setEvents] = useState(initialEvents)
     const [search, setSearch] = useState('')
     const [isOpen, setIsOpen] = useState(false)
     const router = useRouter();
     const [uploading, setUploading] = useState(false);
-    const [imageUrl, setImageUrl] = useState('')
     const [imageFile, setImageFile] = useState<File | null>(null)
-
-    useEffect(() => {
-        setEvents(initialEvents)
-    }, [initialEvents])
 
 
     // ✅ optimized filtering
@@ -136,6 +130,14 @@ export default function EventClient({ initialEvents }: {initialEvents: Event[]})
                                 <option>Faculty</option>
                                 <option>Student Committee</option>
                                 <option>Students</option>
+                            </select>
+
+                            <select name="school_year_id" className="w-full border p-2 rounded">
+                                {schoolYears.map((sy) => (
+                                    <option key={sy.id} value={sy.id}>
+                                        {sy.start_year}-{sy.end_year}
+                                    </option>
+                                ))}
                             </select>
 
                             {/* Location */}

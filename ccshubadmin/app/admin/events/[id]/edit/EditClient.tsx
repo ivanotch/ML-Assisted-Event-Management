@@ -1,5 +1,5 @@
 'use client'
-import { getEventById, updateEvent } from "@/app/actions/eventActions"
+import { updateEvent } from "@/app/actions/eventActions"
 import { ArrowLeft, Calendar, Clock, MapPin, GraduationCap, Users } from 'lucide-react'
 import Link from "next/link"
 import Image from "next/image"
@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge"
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage"
 import { storage } from "@/lib/firebase";
 import { Event } from "@/types/events"
-import { useActionState } from "react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 

@@ -1,40 +1,32 @@
+'use client'
 
+import React, { useEffect, useState } from 'react'
 import CalendarPage from './CalendarClient'
-import {collection, getDocs} from 'firebase/firestore'
-import { db } from '@/lib/firebase'
+import { getAllEvents } from '@/app/actions/eventActions'
 import { Event } from '@/types/events'
-import React from 'react'
-import { Timestamp } from 'firebase/firestore'
 
-export default async function Page() {
-    const snapshot = await getDocs(collection(db, "events"))
+export default function Page() {
+    const [events, setEvents] = useState<Event[]>([])
+    const [loading, setLoading] = useState(true)
 
-    const events: Event[] = snapshot.docs.map(doc => {
-        const data = doc.data()
-
-        return {
-            id: doc.id,
-            title: data.title ?? '',
-            description: data.description ?? '',
-            date: data.date ?? '',
-            start_time: data.start_time ?? '',
-            end_time: data.end_time ?? '',
-            imageUrl: data.imageUrl ?? '',
-            price: data.price ?? 0,
-            department: data.department ?? '',
-            participant_type: data.participant_type ?? '',
-            location: data.location ?? '',
-            requirements: data.requirements ?? '',
-            attendeesLimit: data.attendeesLimit ?? null,
-            status: data.status ?? 'Upcoming',
-
-            createdAt: data.createdAt instanceof Timestamp
-                            ? data.createdAt.toDate().toISOString()
-                            : null
+    useEffect(() => {
+        const fetchEvents = async () => {
+            try {
+                const data = await getAllEvents()
+                setEvents(data)
+            } catch (err) {
+                console.error("Failed to fetch events:", err)
+            } finally {
+                setLoading(false)
+            }
         }
-    })
 
-    return (
-        <CalendarPage initialEvents={events} />
-    )
+        fetchEvents()
+    }, [])
+
+    if (loading) {
+        return <div className="p-6">Loading events...</div>
+    }
+
+    return <CalendarPage initialEvents={events} />
 }
