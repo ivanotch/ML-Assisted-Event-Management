@@ -1,5 +1,5 @@
 'use server'
-import { getDocs, query, where, collection } from 'firebase/firestore'
+import { getDocs, query, where, collection, addDoc, Timestamp } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 
 type EventFeedback = {
@@ -82,4 +82,23 @@ export async function getAllResponseByEventId(
 
         }
     })
+}
+
+export async function createAnnouncement(formData: FormData) {
+  const title = String(formData.get('title'))
+  const description = String(formData.get('description'))
+  const forTarget = String(formData.get('for'))
+  const type = String(formData.get('type'))
+
+  if (!title || !description) {
+    throw new Error('Missing required fields')
+  }
+
+  await addDoc(collection(db, 'announcement'), {
+    title,
+    description,
+    for: forTarget,
+    type,
+    date: Timestamp.now(),
+  })
 }
