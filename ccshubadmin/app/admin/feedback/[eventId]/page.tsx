@@ -1,37 +1,44 @@
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { getEventById } from "@/app/actions/eventActions";
+import SectionClient from "./SectionClient";
 
-import React from 'react'
-import { collection, getDocs, query, where } from 'firebase/firestore'
-import { db } from '@/lib/firebase'
-import { getEventById } from '@/app/actions/eventActions'
+export default async function Page({
+    params,
+}: {
+    params: Promise<{ eventId: string }>;
+}) {
+    const { eventId } = await params;
 
-export default async function page({ params }: { params: Promise<{ eventId: string }> }) {
-    const { eventId } = await params
+    // 🔥 lightweight fetch only for logic
+    const event = await getEventById(eventId);
 
-    const selectedEvent = await getEventById(eventId)
-
-    if (!selectedEvent) {
-        return <div>Event not found</div>
+    if (!event) {
+        return <div className="p-6">Event not found</div>;
     }
 
-    const snapshot = await getDocs(query(collection(db, 'sections'), where('department', '==', selectedEvent.department)))
 
-    const sections = snapshot.docs.map(doc => {
-        const data = doc.data();
+    let snapshot;
 
-        return {
-            id: doc.id,
-            name: data.name ?? '',
-            program_ref: data.program_id ?? null,
-            school_year_ref: data.school_year_id ?? null,
-            year_level: data.year_level ?? 0
-        }
-    })
+    if (event.department === "All") {
+        snapshot = await getDocs(collection(db, "sections"));
+    } else {
+        snapshot = await getDocs(
+            query(
+                collection(db, "sections"),
+                where("program_name", "==", event.department)
+            )
+        );
+    }
 
-    console.log(sections)
+    const sections = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        name: doc.data().name ?? "",
+        program_id: doc.data().program_id?.id ?? null,
+        school_year_id: doc.data().school_year_id?.id ?? null,
+        year_level: doc.data().year_level ?? 0,
+        program_name: doc.data().program_name ?? "",
+    }));
 
-    return (
-        <div>
-            Display Section
-        </div>
-    )
+    return <SectionClient eventId={eventId} sections={sections} />;
 }

@@ -8,7 +8,26 @@ import { useRouter } from 'next/navigation';
 import { Event } from '@/types/events';
 import Link from 'next/link';
 
-export default function FeedbackClient({ initialEvents }: { initialEvents: Event[] }) {
+type SafeEvent = {
+    id: string
+    title: string
+    description: string
+    date: string | null
+    start_time: string
+    end_time: string
+    imageUrl: string
+    price: number
+    department: string
+    participant_type: string
+    location: string
+    requirements: string
+    attendeesLimit: number
+    status: string
+    createdAt: string | null
+    school_year_id: string
+}
+
+export default function FeedbackClient({ initialEvents }: { initialEvents: SafeEvent[] }) {
     const [events, setEvents] = useState(initialEvents)
     const [searchTerm, setSearchTerm] = useState('');
     const router = useRouter();
@@ -80,7 +99,13 @@ export default function FeedbackClient({ initialEvents }: { initialEvents: Event
 
                                     <td className="px-6 py-4 text-gray-600 max-w-md truncate">{item.department}</td>
                                     <td className="px-6 py-4 text-gray-500 whitespace-nowrap">
-                                        {new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                        {item.date
+                                            ? new Date(item.date).toLocaleDateString('en-US', {
+                                                month: 'short',
+                                                day: 'numeric',
+                                                year: 'numeric',
+                                            })
+                                            : 'No date'}
                                     </td>
                                 </tr>
                             ))}

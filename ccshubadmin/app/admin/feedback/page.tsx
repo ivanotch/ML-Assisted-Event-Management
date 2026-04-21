@@ -1,32 +1,50 @@
-'use client'
-
-import { useEffect, useState } from 'react'
 import FeedbackClient from './FeedbackClient'
 import { getAllEvents } from '@/app/actions/eventActions'
-import { Event } from '@/types/events'
 
-export default function Page() {
-  const [events, setEvents] = useState<Event[]>([])
-  const [loading, setLoading] = useState(true)
+export default async function Page() {
+  const data = await getAllEvents()
 
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const data = await getAllEvents()
-        setEvents(data)
-      } catch (err) {
-        console.error("Error fetching events:", err)
-      } finally {
-        setLoading(false)
+  const safeEvents = data.map((event) => {
+    const normalizeDate = (value: any): string | null => {
+      if (!value) return null
+
+      // Firestore Timestamp
+      if (typeof value.toDate === 'function') {
+        return value.toDate().toISOString()
       }
+
+      // Already a Date object
+      if (value instanceof Date) {
+        return value.toISOString()
+      }
+
+      // Already a string (ISO or otherwise)
+      if (typeof value === 'string') {
+        return value
+      }
+
+      return null
     }
 
-    fetchEvents()
-  }, [])
+    return {
+      id: event.id,
+      title: event.title,
+      description: event.description,
+      date: normalizeDate(event.date),
+      start_time: event.start_time,
+      end_time: event.end_time,
+      imageUrl: event.imageUrl,
+      price: event.price,
+      department: event.department,
+      participant_type: event.participant_type,
+      location: event.location,
+      requirements: event.requirements,
+      attendeesLimit: event.attendeesLimit ?? 0,
+      status: event.status,
+      createdAt: normalizeDate(event.createdAt),
+      school_year_id: event.school_year_id ?? "",
+    }
+  })
 
-  if (loading) {
-    return <div className="p-6">Loading feedback...</div>
-  }
-
-  return <FeedbackClient initialEvents={events} />
+  return <FeedbackClient initialEvents={safeEvents} />
 }
