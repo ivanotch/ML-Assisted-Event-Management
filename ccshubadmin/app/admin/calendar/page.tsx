@@ -1,32 +1,33 @@
-'use client'
+import CalendarPage from "./CalendarClient";
+import { getAllEvents } from "@/app/actions/eventActions";
 
-import React, { useEffect, useState } from 'react'
-import CalendarPage from './CalendarClient'
-import { getAllEvents } from '@/app/actions/eventActions'
-import { Event } from '@/types/events'
+export default async function Page() {
+  const eventsData = await getAllEvents();
 
-export default function Page() {
-    const [events, setEvents] = useState<Event[]>([])
-    const [loading, setLoading] = useState(true)
+  // ✅ sanitize for client (remove null issues, Firestore types)
+  const safeEvents = eventsData.map((event) => ({
+    id: event.id,
+    title: event.title ?? "",
+    description: event.description ?? "",
 
-    useEffect(() => {
-        const fetchEvents = async () => {
-            try {
-                const data = await getAllEvents()
-                setEvents(data)
-            } catch (err) {
-                console.error("Failed to fetch events:", err)
-            } finally {
-                setLoading(false)
-            }
-        }
+    date: event.date ?? null,
+    start_time: event.start_time ?? "",
+    end_time: event.end_time ?? "",
 
-        fetchEvents()
-    }, [])
+    imageUrl: event.imageUrl ?? "",
+    price: event.price ?? 0,
 
-    if (loading) {
-        return <div className="p-6">Loading events...</div>
-    }
+    department: event.department ?? "",
+    participant_type: event.participant_type ?? "",
+    location: event.location ?? "",
+    requirements: event.requirements ?? "",
 
-    return <CalendarPage initialEvents={events} />
+    attendeesLimit: event.attendeesLimit ?? null,
+    status: event.status ?? "",
+
+    createdAt: event.createdAt ?? null,
+    school_year_id: event.school_year_id ?? null,
+  }));
+
+  return <CalendarPage initialEvents={safeEvents} />;
 }

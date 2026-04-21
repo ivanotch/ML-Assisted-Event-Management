@@ -1,4 +1,4 @@
-import getAllAttendanceBySectionId from "@/app/actions/feedbackActions";
+import {getAllAttendanceBySectionId} from "@/app/actions/feedbackActions";
 
 export default async function Page({
   params,

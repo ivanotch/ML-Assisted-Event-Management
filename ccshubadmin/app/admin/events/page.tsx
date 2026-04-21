@@ -1,45 +1,50 @@
-'use client'
+import EventClient from "./EventClient";
+import { getAllEvents } from "@/app/actions/eventActions";
+import { getAllSchoolYear } from "@/app/actions/schoolYearActions";
 
-import { useEffect, useState } from 'react'
-import EventClient from './EventClient'
-import { getAllEvents } from '@/app/actions/eventActions'
-import { getAllSchoolYear } from '@/app/actions/schoolYearActions'
-import { Event } from '@/types/events'
-import { SchoolYears } from '@/types/schoolyears'
+export default async function Page() {
+  const [eventsData, schoolYearsData] = await Promise.all([
+    getAllEvents(),
+    getAllSchoolYear(),
+  ]);
 
-export default function Page() {
-    const [events, setEvents] = useState<Event[]>([])
-    const [schoolYears, setSchoolYears] = useState<SchoolYears[]>([])
-    const [loading, setLoading] = useState(true)
+  // ✅ Clean events (remove nulls, Firestore refs, etc.)
+  const safeEvents = eventsData.map((event) => ({
+    id: event.id,
+    title: event.title ?? "",
+    description: event.description ?? "",
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [eventsData, schoolYearsData] = await Promise.all([
-                    getAllEvents(),
-                    getAllSchoolYear()
-                ])
+    date: event.date ?? null,
+    start_time: event.start_time ?? "",
+    end_time: event.end_time ?? "",
 
-                setEvents(eventsData)
-                setSchoolYears(schoolYearsData)
-            } catch (err) {
-                console.error("Error fetching data:", err)
-            } finally {
-                setLoading(false)
-            }
-        }
+    imageUrl: event.imageUrl ?? "",
+    price: event.price ?? 0,
 
-        fetchData()
-    }, [])
+    department: event.department ?? "",
+    participant_type: event.participant_type ?? "",
+    location: event.location ?? "",
+    requirements: event.requirements ?? "",
 
-    if (loading) {
-        return <div className="p-6">Loading events...</div>
-    }
+    attendeesLimit: event.attendeesLimit ?? null,
+    status: event.status ?? "",
 
-    return (
-        <EventClient 
-            initialEvents={events} 
-            schoolYears={schoolYears} 
-        />
-    )
+    createdAt: event.createdAt ?? null,
+    school_year_id: event.school_year_id ?? null,
+  }));
+
+  // ✅ Clean school years
+  const safeSchoolYears = schoolYearsData.map((sy) => ({
+    id: sy.id,
+    start_year: sy.start_year ?? "",
+    end_year: sy.end_year ?? "",
+    is_active: sy.is_active ?? false,
+  }));
+
+  return (
+    <EventClient
+      initialEvents={safeEvents}
+      schoolYears={safeSchoolYears}
+    />
+  );
 }

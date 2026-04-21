@@ -99,7 +99,6 @@ export async function getEventById(id: string): Promise<Event | null> {
     attendeesLimit: data.attendeesLimit ?? null,
     status: data.status ?? 'Upcoming',
     createdAt: data.createdAt?.toDate?.().toISOString?.() ?? null,
-    school_year_ref: data.school_year_ref ?? null,
     school_year_id: data.school_year_id ?? data.school_year_ref?.id ?? null
   }
 }

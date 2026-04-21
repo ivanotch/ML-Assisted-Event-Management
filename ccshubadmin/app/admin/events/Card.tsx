@@ -40,11 +40,13 @@ export default function EventCard({ event }: { event: Event }) {
                         <div className="flex items-center gap-2">
                             <CalendarDays className="h-4 w-4" />
                             <span>
-                                {new Date(event.date).toLocaleDateString('en-US', {
-                                    month: 'short',
-                                    day: 'numeric',
-                                    year: 'numeric'
-                                })}
+                                {event.date
+                                    ? new Date(event.date).toLocaleDateString('en-US', {
+                                        month: 'short',
+                                        day: 'numeric',
+                                        year: 'numeric',
+                                    })
+                                    : 'No date'}
                             </span>
                         </div>
 

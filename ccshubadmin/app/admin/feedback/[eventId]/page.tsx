@@ -2,6 +2,7 @@ import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { getEventById } from "@/app/actions/eventActions";
 import SectionClient from "./SectionClient";
+import { getAllResponseByEventId } from "@/app/actions/feedbackActions";
 
 export default async function Page({
     params,
@@ -12,6 +13,9 @@ export default async function Page({
 
     // 🔥 lightweight fetch only for logic
     const event = await getEventById(eventId);
+
+    const feedbacks = await getAllResponseByEventId(eventId);
+
 
     if (!event) {
         return <div className="p-6">Event not found</div>;
@@ -40,5 +44,5 @@ export default async function Page({
         program_name: doc.data().program_name ?? "",
     }));
 
-    return <SectionClient eventId={eventId} sections={sections} />;
+    return <SectionClient eventId={eventId} sections={sections} feedback={feedbacks}/>;
 }

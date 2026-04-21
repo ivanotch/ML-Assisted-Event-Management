@@ -166,7 +166,7 @@ export default function EditEventForm({ event }: { event: Event }) {
                                 <input
                                     type="date"
                                     name="date"
-                                    defaultValue={event.date}
+                                    defaultValue={event.date ?? undefined}
                                     className="bg-transparent outline-none"
                                 />
                             </div>

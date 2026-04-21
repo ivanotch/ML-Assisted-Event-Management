@@ -38,6 +38,7 @@ export default function CalendarPage({ initialEvents }: { initialEvents: Event[]
 
             // Find events for this day
             const dayEvents = event.filter(e => {
+                if (!e.date) return false;
                 const eventDate = new Date(e.date);
                 return isSameDay(eventDate, cloneDay);
             });
@@ -80,8 +81,10 @@ export default function CalendarPage({ initialEvents }: { initialEvents: Event[]
     }
 
     // Group events by date for mobile view or side panel
-    const selectedDateEvents = event.filter(e => isSameDay(new Date(e.date), selectedDate));
-
+    const selectedDateEvents = event.filter(e => {
+        if (!e.date) return false;
+        return isSameDay(new Date(e.date), selectedDate);
+    });
     return (
         <div className="p-6 max-w-7xl mx-auto flex flex-col h-full gap-6">
             <div className="flex items-center justify-between">
