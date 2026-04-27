@@ -1,15 +1,44 @@
 'use client'
 import Image from "next/image";
 import { Search, Bell, Settings } from "lucide-react";
+import { useEffect, useState } from "react";
+import { auth } from "@/lib/firebase";
 
 const user = {
-  name: "Ivan Bods",
-  role: "Admin",
-  profileImage: null // example
+    name: "Ivan Bods",
+    role: "Admin",
+    profileImage: null // example
 };
 
 export default function Header() {
-    const profileImage = user?.profileImage || "/placeholder-avatar.png";
+    const [userData, setUserData] = useState<{
+        email: string | null;
+        role: string | null;
+        photoURL: string | null;
+    } | null>(null);
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            const user = auth.currentUser;
+
+            if (!user) return;
+
+            const tokenResult = await user.getIdTokenResult();
+
+            setUserData({
+                email: user.email,
+                role: tokenResult.claims.role as string,
+                photoURL: user.photoURL,
+            });
+        };
+
+        fetchUser();
+    }, []);
+
+    console.log(userData)
+
+    const profileImage = userData?.photoURL || "/placeholder-avatar.png";
+
     return (
         <header className="w-full px-6 py-4 flex items-center justify-between bg-white border-b-1">
 
@@ -21,7 +50,7 @@ export default function Header() {
                 />
                 <input
                     type="text"
-                    placeholder="Search events, messages..."
+                    placeholder="Search events..."
                     className="w-full pl-10 pr-4 py-2 rounded-lg border bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
             </div>
@@ -59,8 +88,12 @@ export default function Header() {
 
                     {/* Name + Role */}
                     <div className="leading-tight">
-                        <p className="text-sm font-semibold">Ivan Babida</p>
-                        <p className="text-xs text-gray-500">Admin</p>
+                        <p className="text-sm font-semibold">
+                            {userData?.email || "Loading..."}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                            {userData?.role || "No role"}
+                        </p>
                     </div>
 
                 </div>

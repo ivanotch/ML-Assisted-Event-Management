@@ -1,13 +1,14 @@
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-export default function Home() {
-  const isLogged = true;
+export default async function Home() {
+  const cookieStore = await cookies();
 
-  if (!isLogged) {
-    redirect('/login')
+  const session = cookieStore.get("session")?.value;
+
+  if (!session) {
+    redirect("/auth/login");
   } else {
-    redirect('/admin')
+    redirect("/admin");
   }
-
-  return null
 }

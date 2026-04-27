@@ -14,10 +14,18 @@ import {
     CalendarDays,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { signOut } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 
 export default function SideBar() {
     const pathname = usePathname();
+    const router = useRouter();
+    const [loading, setLoading] = useState(false);
+    const [showLogoutModal, setShowLogoutModal] = useState(false);
+
 
     const navItem = [
         { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -30,7 +38,23 @@ export default function SideBar() {
         { name: "Event History", href: "/admin/history", icon: History },
     ]
 
+    const handleLogout = async () => {
+        setLoading(true);
 
+        try {
+            await signOut(auth);
+
+            await fetch("/api/logout", {
+                method: "POST",
+            });
+
+            router.push("/auth/login");
+        } catch (error) {
+            console.error("Logout failed:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <aside className="w-64 h-screen bg-gray-100 flex flex-col justify-between">
 
@@ -79,6 +103,7 @@ export default function SideBar() {
                 </Link>
 
                 <button
+                    onClick={() => setShowLogoutModal(true)}
                     className="flex items-center gap-3 px-4 py-3 rounded-lg text-red-500 hover:bg-red-100"
                 >
                     <LogOut size={20} />
@@ -86,6 +111,44 @@ export default function SideBar() {
                 </button>
 
             </div>
+
+            {showLogoutModal && (
+                <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 font-[inter]">
+                    <div className="bg-white rounded-xl shadow-lg w-[90%] max-w-md p-6">
+
+                        <h2 className="text-lg font-semibold text-gray-900">
+                            Confirm Logout
+                        </h2>
+
+                        <p className="text-sm text-gray-600 mt-2">
+                            Are you sure you want to sign out of your account?
+                        </p>
+
+                        <div className="flex justify-end gap-3 mt-6">
+
+                            <button
+                                onClick={() => setShowLogoutModal(false)}
+                                className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300"
+                                disabled={loading}
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                onClick={async () => {
+                                    setShowLogoutModal(false);
+                                    await handleLogout();
+                                }}
+                                disabled={loading}
+                                className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+                            >
+                                {loading ? "Signing out..." : "Yes, Sign Out"}
+                            </button>
+
+                        </div>
+                    </div>
+                </div>
+            )}
 
         </aside>
     );
