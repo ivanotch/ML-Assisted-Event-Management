@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Search, Bell, Settings } from "lucide-react";
 import { useEffect, useState } from "react";
 import { auth } from "@/lib/firebase";
+import { onAuthStateChanged } from "firebase/auth";
 
 const user = {
     name: "Ivan Bods",
@@ -18,10 +19,11 @@ export default function Header() {
     } | null>(null);
 
     useEffect(() => {
-        const fetchUser = async () => {
-            const user = auth.currentUser;
-
-            if (!user) return;
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                setUserData(null);
+                return;
+            }
 
             const tokenResult = await user.getIdTokenResult();
 
@@ -30,9 +32,9 @@ export default function Header() {
                 role: tokenResult.claims.role as string,
                 photoURL: user.photoURL,
             });
-        };
+        });
 
-        fetchUser();
+        return () => unsubscribe();
     }, []);
 
     console.log(userData)
