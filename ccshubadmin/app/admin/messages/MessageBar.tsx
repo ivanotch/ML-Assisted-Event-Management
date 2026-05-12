@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db, auth } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc } from 'firebase/firestore'
@@ -29,40 +29,24 @@ export default function MessageBar({ activeConvId, setActiveConvId, setOtherUser
     useEffect(() => {
         const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
             if (!user) {
-                console.log("No user");
                 setConversations([]);
                 return;
             }
 
             const uid = user.uid;
-            console.log("UID:", uid);
 
-            const ref = doc(db, "userConversations", uid);
+            const q = query(
+                collection(db, "userConversations", uid, "conversations"),
+                orderBy("updated_at", "desc") // 🔥 important for chat list
+            );
 
-            const unsubscribe = onSnapshot(ref, (snap) => {
-                if (!snap.exists()) {
-                    console.log("No userConversations doc");
-                    setConversations([]);
-                    return;
-                }
+            const unsubscribe = onSnapshot(q, (snapshot) => {
+                const data = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
 
-                const data = snap.data();
-
-                if (!data) {
-                    setConversations([]);
-                    return;
-                }
-
-                const conversation = {
-                    id: uid, // or data.conversationId if you want
-                    ...data
-                };
-
-                setConversations([conversation] as UserConversation[]);
-
-                console.log("DATA:", data);
-                console.log("CONV:", conversations);
-
+                setConversations(data as UserConversation[]);
             });
 
             return () => unsubscribe();
@@ -90,7 +74,7 @@ export default function MessageBar({ activeConvId, setActiveConvId, setOtherUser
                             setOtherUserInfo({
                                 name: conv.otherUserName,
                                 avatarUrl: conv.otherUserAvatarUrl,
-                                id: conv.otherUserId
+                                otherUserId: conv.otherUserId
                             })
                         }}
                         className={cn(
@@ -106,8 +90,8 @@ export default function MessageBar({ activeConvId, setActiveConvId, setOtherUser
                             )}
                         </div>
 
-                        <div className='flex items-center justify-between'>
-                            <div className="flex-1">
+                        <div className='flex items-center w-full justify-between'>
+                            <div className="flex-1 ">
                                 <div className="flex justify-between">
                                     <h3 className="text-sm truncate w-[90%] font-semibold">
                                         {conv.otherUserName}
@@ -115,7 +99,7 @@ export default function MessageBar({ activeConvId, setActiveConvId, setOtherUser
 
                                 </div>
 
-                                <div className='flex justify-between items-center'>
+                                <div className='flex justify-between w-full items-center'>
                                     <p className="text-xs text-gray-500 w-[70%] truncate">
                                         {conv.lastMessage?.text}
                                     </p>

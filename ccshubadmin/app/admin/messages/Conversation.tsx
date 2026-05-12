@@ -4,16 +4,18 @@ import { Send } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
+import { collection, onSnapshot, orderBy, query, increment } from 'firebase/firestore';
+import { addDoc, serverTimestamp, doc, updateDoc } from "firebase/firestore";
 import { db, auth } from '@/lib/firebase';
 
 export default function Conversation({ activeConvId, otherUserInfo }: any) {
     const [messages, setMessages] = useState<any[]>([]);
     const [msgInput, setMsgInput] = useState('');
-    console.log("other info", otherUserInfo)
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        if (!activeConvId) return;
+        if (!activeConvId || !otherUserInfo) return;
+        console.log(otherUserInfo)
 
         const q = query(
             collection(db, "conversations", activeConvId, "messages"),
@@ -32,9 +34,77 @@ export default function Conversation({ activeConvId, otherUserInfo }: any) {
         return () => unsubscribe();
     }, [activeConvId]);
 
-    if (!activeConvId) {
+    if (!activeConvId || !otherUserInfo) {
         return <div className="flex-1 flex items-center justify-center">Select a chat</div>;
     }
+
+    const handleSend = async () => {
+        if (!msgInput.trim() || !activeConvId) return;
+
+        const currentUser = auth.currentUser;
+        if (!currentUser) return;
+
+        if (loading) return;
+        setLoading(true);
+
+        const senderId = currentUser.uid;
+        const receiverId = otherUserInfo.otherUserId;
+
+        const messageData = {
+            text: msgInput,
+            senderId,
+            created_at: serverTimestamp()
+        };
+
+        try {
+            // 🔹 1. Add message to subcollection
+            await addDoc(
+                collection(db, "conversations", activeConvId, "messages"),
+                messageData
+            );
+
+            // 🔹 2. Update main conversation
+            await updateDoc(
+                doc(db, "conversations", activeConvId),
+                {
+                    lastMessage: messageData,
+                    updated_at: serverTimestamp()
+                }
+            );
+
+            // 🔹 3. Update sender's conversation (no unread)
+            await updateDoc(
+                doc(db, "userConversations", senderId, "conversations", activeConvId),
+                {
+                    lastMessage: messageData,
+                    updated_at: serverTimestamp(),
+                    unreadCount: 0
+                }
+            );
+
+            // 🔹 4. Update receiver's conversation (increment unread)
+            await updateDoc(
+                doc(db, "userConversations", receiverId, "conversations", activeConvId),
+                {
+                    lastMessage: messageData,
+                    updated_at: serverTimestamp(),
+                    unreadCount: increment(1)
+                }
+            );
+
+            setMsgInput("");
+        } catch (err) {
+            console.error("Error sending message:", err);
+        }
+
+        setLoading(false);
+    };
+
+    const handleKeyDown = (e: any) => {
+        if (e.key === "Enter") {
+            handleSend();
+        }
+    };
 
     return (
         <div className="flex-1 flex flex-col bg-white border border-black rounded-xl">
@@ -82,9 +152,10 @@ export default function Conversation({ activeConvId, otherUserInfo }: any) {
                 <Input
                     value={msgInput}
                     onChange={(e) => setMsgInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
                     placeholder="Type a message..."
                 />
-                <Button>
+                <Button disabled={loading} onClick={handleSend}>
                     <Send className="w-4 h-4" />
                 </Button>
             </div>

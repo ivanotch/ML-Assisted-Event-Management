@@ -11,7 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { Input } from "@/components/ui/input"
 import SentimentBar from "@/component/graphs/SentimentBar"
 import SentimentLineChart from "@/component/graphs/SentimentTrend"
 import WordCloudSentiment from "@/component/graphs/WordCloud"
@@ -20,14 +21,72 @@ import RiskFactorPie from "@/component/graphs/RiskPie"
 import AttendancePredictionTable from "@/component/graphs/AttendancePrediction"
 import HistoricalAttendance from "@/component/graphs/HistoricalAttendance"
 import TopEventsTable from "@/component/graphs/EventPerformance"
+import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function Dashboard() {
   const [selected, setSelected] = useState("all")
+  const [open, setOpen] = useState(false);
+  const [role, setRole] = useState("student");
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    birthday: "",
+    role: "student",
+    studentNumber: "",
+    department: "",
+    section: "",
+  });
 
   const data = selected === "all" ? allEvents : singleEvent
 
   const topKPI = data.kpi.slice(0, 3)
   const bottomKPI = data.kpi.slice(3, 7)
+
+  const handleCreateAccount = async () => {
+    
+  }
+
+  const handleChange = (key: string, value: string) => {
+    setForm((prev) => ({
+      ...prev,
+      [key]: value
+    }))
+  }
+
+  useEffect(() => {
+    if (form.role === "admin") {
+      setForm(prev => ({
+        ...prev,
+        department: "",
+        section: "",
+        studentNumber: "",
+      }));
+    }
+
+    if (form.role === "student_committee") {
+      setForm(prev => ({
+        ...prev,
+        department: "",
+        section: "",
+        studentNumber: "",
+      }));
+    }
+
+    if (form.role === "faculty") {
+      setForm(prev => ({
+        ...prev,
+        section: "",
+        studentNumber: "",
+      }));
+    }
+  }, [form.role]);
 
   return (
     <main className="p-6 space-y-6">
@@ -36,17 +95,22 @@ export default function Dashboard() {
       <div className="flex justify-between items-center">
         <h1 className="text-xl font-semibold">Dashboard</h1>
 
-        <Select value={selected} onValueChange={setSelected}>
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Select Event" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem value="all">All Events</SelectItem>
-              <SelectItem value="evt_004">AI Workshop 2026</SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
+        <div className="flex gap-5 font-[inter]">
+          <div>
+            <Button onClick={() => setOpen(true)}>Add an Account</Button>
+          </div>
+          <Select value={selected} onValueChange={setSelected}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Select Event" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value="all">All Events</SelectItem>
+                <SelectItem value="evt_004">AI Workshop 2026</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Main Grid */}
@@ -111,6 +175,107 @@ export default function Dashboard() {
         <HistoricalAttendance data={allEvents.historicalAttendance} />
         <TopEventsTable data={allEvents.topEvents} />
       </div>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-lg" aria-describedby="create an account">
+          <DialogHeader>
+            <DialogTitle>Create Account</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {/* Basic Fields */}
+            <Input placeholder="Full Name" value={form.name} onChange={(e) => handleChange('name', e.target.value)} />
+            <Input placeholder="Email" type="email" value={form.email} onChange={(e) => handleChange('email', e.target.value)} />
+            <Input placeholder="Password" type="password" value={form.password} onChange={(e) => handleChange('password', e.target.value)} />
+            <Input type="date" value={form.birthday} onChange={(e) => handleChange('birthday', e.target.value)} />
+
+            {/* Role Select */}
+            <Select value={form.role} onValueChange={(val) => handleChange('role', val)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select Role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="student">Student</SelectItem>
+                <SelectItem value="student_committee">Student Committee</SelectItem>
+                <SelectItem value="faculty">Faculty</SelectItem>
+                <SelectItem value="admin">Admin</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* STUDENT FIELDS */}
+            {form.role === "student" && (
+              <>
+                <Input placeholder="Student Number" value={form.studentNumber} onChange={(e) => handleChange('studentNumber', e.target.value)} />
+
+                <Select onValueChange={(e) => handleChange('department', e)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Department" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ccs">CCS</SelectItem>
+                    <SelectItem value="cas">CAS</SelectItem>
+                    <SelectItem value="cit">CIT</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select onValueChange={(e) => handleChange('section', e)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Section" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="a">Section A</SelectItem>
+                    <SelectItem value="b">Section B</SelectItem>
+                  </SelectContent>
+                </Select>
+              </>
+            )}
+
+            {form.role === "student_committee" && (
+              <>
+                <Input placeholder="Student Number" value={form.studentNumber} onChange={(e) => handleChange('studentNumber', e.target.value)} />
+
+                <Select onValueChange={(e) => handleChange('department', e)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Department" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ccs">CCS</SelectItem>
+                    <SelectItem value="cas">CAS</SelectItem>
+                    <SelectItem value="cit">CIT</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select onValueChange={(e) => handleChange('section', e)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Section" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="a">Section A</SelectItem>
+                    <SelectItem value="b">Section B</SelectItem>
+                  </SelectContent>
+                </Select>
+              </>
+            )}
+
+            {/* FACULTY FIELDS */}
+            {form.role === "faculty" && (
+              <Select onValueChange={(e) => handleChange('department', e)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Department" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ccs">CCS</SelectItem>
+                  <SelectItem value="cas">CAS</SelectItem>
+                  <SelectItem value="cit">CIT</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+
+            {/* ACTION */}
+            <Button onClick={handleCreateAccount} className="w-full">Create Account</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </main>
   )
 }
