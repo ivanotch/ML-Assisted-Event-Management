@@ -26,10 +26,13 @@ export default function Header() {
             }
 
             const tokenResult = await user.getIdTokenResult();
+            const role =
+                (tokenResult.claims.role as string) ||
+                (tokenResult.claims.admin ? "admin" : "user");
 
             setUserData({
                 email: user.email,
-                role: tokenResult.claims.role as string,
+                role: role,
                 photoURL: user.photoURL,
             });
         });

@@ -11,27 +11,80 @@ export default function AdminLogin() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+    const [fieldError, setFieldError] = useState<{
+        email?: string;
+        password?: string;
+    }>({});
+
+    const validate = () => {
+        const errors: any = {};
+
+        if (!email.includes("@")) {
+            errors.email = "Please enter a valid email";
+        }
+
+        if (password.length < 6) {
+            errors.password = "Password must be at least 6 characters";
+        }
+
+        setFieldError(errors);
+
+        return Object.keys(errors).length === 0;
+    };
 
 
     const handleLogin = async () => {
+        setError("");
+
+        if (!validate()) return;
+
         setLoading(true);
+
         try {
             const userCredential = await signInWithEmailAndPassword(
-                auth, email, password
+                auth,
+                email,
+                password
             );
 
             const token = await userCredential.user.getIdToken();
 
-            await fetch("/api/login", {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ token })
+            const res = await fetch("/api/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ token }),
             });
 
-            router.push('/admin');
-        } catch (err) {
-            console.error(err);
-            alert("Login failed");
+            if (!res.ok) {
+                throw new Error("Unauthorized access");
+            }
+
+            router.push("/admin");
+        } catch (err: any) {
+            console.log(err);
+
+            // 🔥 Firebase error mapping
+            switch (err.code) {
+                case "auth/user-not-found":
+                    setError("No account found with this email.");
+                    break;
+
+                case "auth/wrong-password":
+                    setError("Incorrect password.");
+                    break;
+
+                case "auth/invalid-email":
+                    setError("Invalid email format.");
+                    break;
+
+                case "auth/too-many-requests":
+                    setError("Too many attempts. Try again later.");
+                    break;
+
+                default:
+                    setError("Login failed. Please try again.");
+            }
         } finally {
             setLoading(false);
         }
@@ -81,6 +134,11 @@ export default function AdminLogin() {
                                     className="appearance-none block w-full px-4 py-3 border border-slate-300 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all duration-200 ease-in-out"
                                     placeholder="admin@ccshub.com"
                                 />
+                                {fieldError.email && (
+                                    <p className="text-sm text-red-500 mt-1">
+                                        {fieldError.email}
+                                    </p>
+                                )}
                             </div>
                         </div>
 
@@ -102,6 +160,11 @@ export default function AdminLogin() {
                                     className="appearance-none block w-full px-4 py-3 border border-slate-300 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all duration-200 ease-in-out"
                                     placeholder="••••••••"
                                 />
+                                {fieldError.password && (
+                                    <p className="text-sm text-red-500 mt-1">
+                                        {fieldError.password}
+                                    </p>
+                                )}
                             </div>
                         </div>
 
@@ -119,6 +182,11 @@ export default function AdminLogin() {
 
                         {/* Submit Button */}
                         <div>
+                            {error && (
+                                <div className="bg-red-50 border border-red-200 text-red-600 text-sm p-3 rounded-lg">
+                                    {error}
+                                </div>
+                            )}
                             <button
                                 type="submit"
                                 disabled={loading}

@@ -28,11 +28,25 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { doc, setDoc, serverTimestamp, collection, addDoc } from "firebase/firestore"
+import { db } from "@/lib/firebase"
+import { getAuth } from 'firebase/auth';
+
+const initialForm = {
+  name: "",
+  email: "",
+  password: "",
+  birthday: "",
+  role: "student",
+  studentNumber: "",
+  department: "",
+  section: "",
+};
 
 export default function Dashboard() {
   const [selected, setSelected] = useState("all")
   const [open, setOpen] = useState(false);
-  const [role, setRole] = useState("student");
+  const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -50,8 +64,69 @@ export default function Dashboard() {
   const bottomKPI = data.kpi.slice(3, 7)
 
   const handleCreateAccount = async () => {
+    if (!form.email || !form.password) return;
+
+    setLoading(true);
+
+    try {
+      const res = await fetch('/api/createUser', {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: form.email,
+          password: form.password,
+          role: form.role,
+          name: form.name
+        })
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to create user");
+      }
+
+      const data = await res.json();
+      const uid = data.uid;
+
+      // ✅ Base user document (single source of truth)
+      await setDoc(doc(db, 'user', uid), {
+        birthday: form.birthday,
+        created_at: serverTimestamp(),
+        email: form.email,
+        name: form.name,
+        type: form.role,
+      });
+
+      // ✅ Role-specific collections
+      if (form.role === 'student') {
+        setDoc(doc(db, 'students', uid), {
+          section_id: form.section,
+          student_number: form.studentNumber,
+          user_id: uid,
+        });
+      }
+
+      if (form.role === 'student_committee') {
+        setDoc(doc(db, 'student_committee', uid), {
+          section_id: form.section,
+          student_number: form.studentNumber,
+          user_id: uid,
+        });
+      }
+      console.log("User created successfully");
+      setForm(initialForm)
+      setLoading(false)
+      setOpen(false)
+
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+
     
-  }
+  };
 
   const handleChange = (key: string, value: string) => {
     setForm((prev) => ({
@@ -223,8 +298,8 @@ export default function Dashboard() {
                     <SelectValue placeholder="Section" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="a">Section A</SelectItem>
-                    <SelectItem value="b">Section B</SelectItem>
+                    <SelectItem value="fwWItCYBMtSXUBETjIkT">Section A</SelectItem>
+                    <SelectItem value="hGlNnaE8TEmqkOwUiLsY">Section B</SelectItem>
                   </SelectContent>
                 </Select>
               </>
@@ -250,8 +325,8 @@ export default function Dashboard() {
                     <SelectValue placeholder="Section" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="a">Section A</SelectItem>
-                    <SelectItem value="b">Section B</SelectItem>
+                    <SelectItem value="fwWItCYBMtSXUBETjIkT">Section A</SelectItem>
+                    <SelectItem value="hGlNnaE8TEmqkOwUiLsY">Section B</SelectItem>
                   </SelectContent>
                 </Select>
               </>
@@ -272,7 +347,9 @@ export default function Dashboard() {
             )}
 
             {/* ACTION */}
-            <Button onClick={handleCreateAccount} className="w-full">Create Account</Button>
+            <Button disabled={loading} onClick={handleCreateAccount} className="w-full">
+              {loading ? "Loading..." : "Create Account"}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
