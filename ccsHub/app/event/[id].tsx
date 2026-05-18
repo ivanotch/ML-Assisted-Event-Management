@@ -8,7 +8,7 @@ import Feather from '@expo/vector-icons/Feather';
 import { useState } from "react";
 import Fontisto from '@expo/vector-icons/Fontisto';
 import { ScrollView, Image, Animated } from "react-native";
-
+import {useEvent} from "../../src/hooks/useEvents"
 
 export default function EventDetails() {
 
@@ -16,6 +16,11 @@ export default function EventDetails() {
     const router = useRouter();
     const [expanded, setExpanded] = useState(false);
     const [liked, setLiked] = useState(false);
+    const { event } = useEvent(id as string);
+
+    if (!event) {
+        return <Text>Loading...</Text>;
+    }
 
     return (
         <View style={{ flex: 1, backgroundColor: "#1d1d1d" }}>
@@ -26,7 +31,7 @@ export default function EventDetails() {
             >
 
                 <ImageBackground
-                    source={require("../../assets/images/upcoming-placeholder.jpg")}
+                    source={{ uri: event.imageUrl }}
                     style={styles.image}
                 >
                     {/* Back Button */}
@@ -65,14 +70,14 @@ export default function EventDetails() {
                 <View style={styles.contentContainer}>
                     {/* tag */}
                     <View style={styles.tag}>
-                        <Text style={styles.tagText}>Departmental</Text>
+                        <Text style={styles.tagText}>{event.department}</Text>
                     </View>
 
-                    <Text style={{ fontSize: 23, fontWeight: '600', color: '#ffff', marginBottom: 8 }}>COMSA Anniversary</Text>
+                    <Text style={{ fontSize: 23, fontWeight: '600', color: '#ffff', marginBottom: 8 }}>{event.title}</Text>
 
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 8 }}>
                         <Feather name="map-pin" size={22} color="white" />
-                        <Text style={{ color: '#808080' }}>EARIST, MIS Building 2nd flr</Text>
+                        <Text style={{ color: '#808080' }}>{event.location}</Text>
                     </View>
 
                     <View>
@@ -81,11 +86,7 @@ export default function EventDetails() {
                                 numberOfLines={expanded ? undefined : 5}
                                 style={styles.description}
                             >
-                                Lorem ipsum dolor sit amet consectetur adipiscing elit. Ex sapien vitae pellentesque sem placerat in id.
-                                Pretium tellus duis convallis tempus leo eu aenean. Urna tempor pulvinar vivamus fringilla lacus nec metus.
-                                Iaculis massa nisl malesuada lacinia integer nunc posuere. Semper vel class aptent taciti sociosqu ad litora.
-                                Conubia nostra inceptos himenaeos orci varius natoque penatibus. Dis parturient montes nascetur ridiculus mus donec rhoncus.
-                                Nulla molestie mattis scelerisque maximus eget fermentum odio. Purus est efficitur laoreet mauris pharetra vestibulum fusce.
+                                {event.description}
                             </Text>
 
                             {expanded ? <Text style={{ color: '#4da6ff', marginVertical: 8 }}>#Comsa #Anniversary #JoinUs</Text> : null}
@@ -115,7 +116,7 @@ export default function EventDetails() {
                             <Fontisto name="date" size={24} color="#808080" />
                             <Text style={{ color: '#808080' }}>Event Date</Text>
                         </View>
-                        <Text style={{ color: 'white' }}>Jan 10, 2026</Text>
+                        <Text style={{ color: 'white' }}>{event.date}</Text>
                     </View>
 
                     <View style={styles.row}>
@@ -123,13 +124,13 @@ export default function EventDetails() {
                             <Ionicons name="time-outline" size={24} color="#808080" />
                             <Text style={{ color: '#808080' }}>Time</Text>
                         </View>
-                        <Text style={{ color: 'white' }}>10:00AM</Text>
+                        <Text style={{ color: 'white' }}>{event.start_time}</Text>
                     </View>
 
 
                     {/* Promotional Image */}
                     <Image
-                        source={require("../../assets/images/upcoming-placeholder.jpg")}
+                        source={{uri: event.imageUrl}}
                         style={styles.promoImage}
                         resizeMode="cover"
                     />
@@ -140,7 +141,7 @@ export default function EventDetails() {
             <View style={styles.bottomBar}>
                 <View>
                     <Text style={{ color: "white" }}>Price</Text>
-                    <Text style={{ color: "white", fontWeight: "bold", fontSize: 20 }}>₱10,000</Text>
+                    <Text style={{ color: "white", fontWeight: "bold", fontSize: 20 }}>₱{event.price}</Text>
                 </View>
 
                 <TouchableOpacity style={styles.proceedButton}>

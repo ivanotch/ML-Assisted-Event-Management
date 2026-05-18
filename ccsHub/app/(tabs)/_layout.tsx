@@ -3,10 +3,12 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import { Tabs, useRouter } from 'expo-router';
 import { TouchableOpacity } from 'react-native';
 
+
 export default function _Layout() {
     const activeColor = "#2563eb"; // blue theme
     const inactiveColor = "gray";
-    const router = useRouter()
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const router = useRouter();
 
     return (
         <Tabs
