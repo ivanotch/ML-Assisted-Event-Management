@@ -5,6 +5,9 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Octicons from '@expo/vector-icons/Octicons';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { signOut } from "firebase/auth";
+import { auth } from "../../src/lib/firebaseConfig";
+import { router } from "expo-router";
 
 interface Student {
     fullName: string;
@@ -27,6 +30,15 @@ export const mockStudent: Student = {
 
 export default function Profile() {
     const student = mockStudent;
+
+    const handleLogout = async () => {
+        try {
+            await signOut(auth);
+            router.replace("/login"); // redirect to login
+        } catch (error) {
+            console.log("Logout error:", error);
+        }
+    };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -112,6 +124,10 @@ export default function Profile() {
                     </View>
                 </View>
             </View>
+            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+                <Ionicons name="log-out-outline" size={20} color="white" />
+                <Text style={styles.logoutText}>Logout</Text>
+            </TouchableOpacity>
         </SafeAreaView>
     );
 }
@@ -148,6 +164,21 @@ const styles = StyleSheet.create({
         shadowRadius: 10,
         elevation: 4,
     },
+        logoutButton: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: '#EF4444',
+            padding: 14,
+            borderRadius: 12,
+            marginTop: 30,
+            gap: 8,
+        },
+        logoutText: {
+            color: 'white',
+            fontSize: 16,
+            fontWeight: '600',
+        },
     avatar: {
         borderWidth: 5,
         borderColor: '#ffff',
