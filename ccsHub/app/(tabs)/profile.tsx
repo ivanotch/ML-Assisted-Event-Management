@@ -8,28 +8,47 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { signOut } from "firebase/auth";
 import { auth } from "../../src/lib/firebaseConfig";
 import { router } from "expo-router";
+import { useEffect, useState } from "react";
+import {getLoggedUser} from '../../src/services/loginUser'
 
-interface Student {
-    fullName: string;
-    studentNumber: string;
-    section: string;
-    department: string;
-    program: string;
-    photo: string;
-}
+// interface Student {
+//     fullName: string;
+//     studentNumber: string;
+//     section: string;
+//     department: string;
+//     program: string;
+//     photo: string;
+// }
 
-export const mockStudent: Student = {
-    fullName: "Sarah Johnson",
-    studentNumber: "2021-00123",
-    section: "CS-4A",
-    department: "Computer Science",
-    program: "Bachelor of Science in Computer Science",
-    photo:
-        "https://images.unsplash.com/photo-1659080907111-7c726e435a28?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
-};
+// export const mockStudent: Student = {
+//     fullName: "Sarah Johnson",
+//     studentNumber: "2021-00123",
+//     section: "CS-4A",
+//     department: "Computer Science",
+//     program: "Bachelor of Science in Computer Science",
+//     photo:
+//         "https://images.unsplash.com/photo-1659080907111-7c726e435a28?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
+// };
 
 export default function Profile() {
-    const student = mockStudent;
+    const [student, setStudent] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadUser = async () => {
+            try {
+                const data = await getLoggedUser();
+
+                setStudent(data);
+            } catch (error) {
+                console.log(error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadUser();
+    }, []);
 
     const handleLogout = async () => {
         try {
@@ -40,15 +59,28 @@ export default function Profile() {
         }
     };
 
+    if (loading) {
+        return (
+            <SafeAreaView>
+                <Text>Loading...</Text>
+            </SafeAreaView>
+        );
+    }
+
     return (
         <SafeAreaView style={styles.container}>
             {/* Header */}
             <Text style={styles.header}>Profile</Text>
 
-            {/* Profile Card */}
+             {/*Profile Card*/}
             <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
                 <View style={{ position: 'relative' }}>
-                    <Image source={{ uri: student.photo }} style={styles.avatar} />
+                    <Image
+                        source={{
+                            uri: student?.user?.avatarUrl
+                        }}
+                        style={styles.avatar}
+                    />
                     <AntDesign style={{ position: 'absolute', bottom: 10, right: 8, backgroundColor: '#ffff', padding: 3, borderRadius: 10 }} name="edit" size={24} color="black" />
                 </View>
             </View>
@@ -71,7 +103,7 @@ export default function Profile() {
                                 Name
                             </Text>
                             <Text style={{ fontSize: 16 }}>
-                                {student.fullName}
+                                {student?.user?.name}
                             </Text>
                         </View>
                     </View>
@@ -83,7 +115,7 @@ export default function Profile() {
                                 Student Number
                             </Text>
                             <Text style={{ fontSize: 16 }}>
-                                {student.studentNumber}
+                                {student?.student?.student_number}
                             </Text>
                         </View>
                     </View>
@@ -95,7 +127,7 @@ export default function Profile() {
                                 program
                             </Text>
                             <Text style={{ fontSize: 16 }}>
-                                {student.program}
+                                {student?.section?.course_name}
                             </Text>
                         </View>
                     </View>
@@ -107,7 +139,7 @@ export default function Profile() {
                                 Department
                             </Text>
                             <Text style={{ fontSize: 16 }}>
-                                {student.department}
+                                {student?.section?.program_name}
                             </Text>
                         </View>
                     </View>
@@ -118,7 +150,7 @@ export default function Profile() {
                                 Section
                             </Text>
                             <Text style={{ fontSize: 16 }}>
-                                {student.section}
+                                {student?.section?.name}
                             </Text>
                         </View>
                     </View>
