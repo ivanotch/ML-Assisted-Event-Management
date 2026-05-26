@@ -1,14 +1,16 @@
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { mockEvents } from '../../data/messages'
-import { View, Text, ImageBackground, TouchableOpacity, StyleSheet } from 'react-native';
+// import { mockEvents } from '../../data/messages'
+import {View, Text, ImageBackground, TouchableOpacity, StyleSheet, ActivityIndicator} from 'react-native';
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import Feather from '@expo/vector-icons/Feather';
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import Fontisto from '@expo/vector-icons/Fontisto';
 import { ScrollView, Image, Animated } from "react-native";
-import {useEvent} from "../../src/hooks/useEvents"
+import {useEvent} from "../../../src/hooks/useEvents"
+import {isStudentRegistered} from "../../../src/services/events"
+import {auth} from "../../../src/lib/firebaseConfig";
 
 export default function EventDetails() {
 
@@ -17,9 +19,62 @@ export default function EventDetails() {
     const [expanded, setExpanded] = useState(false);
     const [liked, setLiked] = useState(false);
     const { event } = useEvent(id as string);
+    const [registered, setRegistered] = useState(false);
+    const [checkingRegistration, setCheckingRegistration] = useState(true);
+    const currentUser = auth.currentUser;
+    const uid = currentUser?.uid;
+
+    useEffect(() => {
+        if (!event || !uid) return;
+
+        void (async () => {
+            try {
+                const registration = await isStudentRegistered(
+                    event.id,
+                    uid
+                );
+
+                setRegistered(!!registration);
+            } catch (error) {
+                console.error(
+                    "Failed to check registration",
+                    error
+                );
+            } finally {
+                setCheckingRegistration(false);
+            }
+        })();
+    }, [event, uid]);
 
     if (!event) {
         return <Text>Loading...</Text>;
+    }
+
+    if (!currentUser) {
+        console.log("No logged in user");
+        return null;
+    }
+
+    if (!event || checkingRegistration) {
+        return (
+            <SafeAreaView
+                style={{
+                    flex: 1,
+                    justifyContent: "center",
+                    alignItems: "center",
+                    gap: 5,
+                    backgroundColor: "#1d1d1d",
+                }}
+            >
+                <ActivityIndicator
+                    size="large"
+                    color="#3B82F6"
+                />
+                <Text style={{ color: "white" }}>
+                    Loading...
+                </Text>
+            </SafeAreaView>
+        );
     }
 
     return (
@@ -144,9 +199,21 @@ export default function EventDetails() {
                     <Text style={{ color: "white", fontWeight: "bold", fontSize: 20 }}>₱{event.price}</Text>
                 </View>
 
-                <TouchableOpacity style={styles.proceedButton}>
-                    <Text style={{ color: "#000", fontWeight: "600" }}>
-                        Proceed
+                <TouchableOpacity
+                    disabled={registered}
+                    onPress={() => router.push(`/event/${id}/register`)}
+                    style={[
+                        styles.proceedButton,
+                        registered && styles.disabledButton,
+                    ]}
+                >
+                    <Text
+                        style={[
+                            styles.proceedButtonText,
+                            registered && styles.disabledButtonText,
+                        ]}
+                    >
+                        {registered ? "Registered" : "Proceed"}
                     </Text>
                 </TouchableOpacity>
             </View>
@@ -266,5 +333,18 @@ const styles = StyleSheet.create({
         paddingHorizontal: 30,
         paddingVertical: 12,
         borderRadius: 25,
+    },
+    proceedButtonText: {
+        color: "#000",
+        fontWeight: "600",
+    },
+    disabledButton: {
+        backgroundColor: "#2A2A2A",
+        borderWidth: 1,
+        borderColor: "#3A3A3A",
+    },
+
+    disabledButtonText: {
+        color: "#808080",
     },
 });

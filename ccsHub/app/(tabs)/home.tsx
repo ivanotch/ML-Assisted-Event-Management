@@ -24,7 +24,7 @@ export default function Home() {
 
     const renderEvent = ({ item }: { item: Event }) => (
         <TouchableOpacity style={styles.card} onPress={() => router.push({
-            pathname: '/event/[id]',
+            pathname: '/event/[id]/eventDetails',
             params: {id: item.id}
         })}>
             <Image source={{ uri: item.imageUrl }} style={styles.cardImage} />
