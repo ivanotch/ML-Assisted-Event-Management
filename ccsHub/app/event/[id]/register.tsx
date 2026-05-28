@@ -46,7 +46,7 @@ export default function RegisterPage() {
         if (isRegistering) return;
 
         if (event.price > 0) {
-            router.push({
+            router.replace({
                 pathname: "/event/[id]/payment",
                 params: {
                     id
@@ -63,7 +63,7 @@ export default function RegisterPage() {
                     event.price,
                 );
 
-                router.push({
+                router.replace({
                     pathname: "/event/[id]/ticket",
                     params: {
                         id,
@@ -81,6 +81,18 @@ export default function RegisterPage() {
 
     return (
         <SafeAreaView style={styles.container}>
+            <TouchableOpacity
+                style={styles.backButton}
+                onPress={() => {
+                    if (router.canGoBack()) {
+                        router.back();
+                    } else {
+                        router.replace("/event/[id]/eventDetails");
+                    }
+                }}
+            >
+                <Ionicons name="arrow-back" size={22} color="white" />
+            </TouchableOpacity>
             <ScrollView contentContainerStyle={{ padding: 20, justifyContent: 'center' }}>
                 <LinearGradient
                     colors={["#1E293B", "#111827"]}
@@ -251,6 +263,15 @@ const styles = StyleSheet.create({
 
     disabledButton: {
         opacity: 0.6,
+    },
+    backButton: {
+        position: "absolute",
+        top: 60,
+        left: 15,
+        backgroundColor: "rgba(0,0,0,0.4)",
+        padding: 8,
+        borderRadius: 20,
+        zIndex: 1
     },
 
     errorText: {

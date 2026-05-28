@@ -1,9 +1,9 @@
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
-import { View, Text, StyleSheet } from "react-native";
+import {View, Text, StyleSheet, TouchableOpacity} from "react-native";
 import QRCode from "react-native-qrcode-svg";
-import { useLocalSearchParams } from "expo-router";
+import {router, useLocalSearchParams} from "expo-router";
 
 export default function TicketPage() {
     const { id, registrationId } = useLocalSearchParams<{ id: string, registrationId: string }>();
@@ -16,6 +16,18 @@ export default function TicketPage() {
 
     return (
         <SafeAreaView style={styles.container}>
+            <TouchableOpacity
+                style={styles.backButton}
+                onPress={() => {
+                    if (router.canGoBack()) {
+                        router.back();
+                    } else {
+                        router.replace("/event/[id]/eventDetails");
+                    }
+                }}
+            >
+                <Ionicons name="arrow-back" size={22} color="white" />
+            </TouchableOpacity>
             <LinearGradient
                 colors={["#111827", "#0F172A"]}
                 style={styles.content}
@@ -93,5 +105,14 @@ const styles = StyleSheet.create({
     info: {
         color: "#94A3B8",
         marginTop: 8,
+    },
+    backButton: {
+        position: "absolute",
+        top: 60,
+        left: 15,
+        backgroundColor: "rgba(0,0,0,0.4)",
+        padding: 8,
+        borderRadius: 20,
+        zIndex: 1
     },
 });

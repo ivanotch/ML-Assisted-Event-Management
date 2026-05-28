@@ -4,6 +4,22 @@ import { collection, onSnapshot, doc, addDoc, serverTimestamp, updateDoc,
     where,
     getDocs, } from 'firebase/firestore';
 import { db } from '../lib/firebaseConfig';
+import {async} from "@firebase/util";
+import {Event} from '../types/event'
+
+interface Registration {
+    id: string;
+    checked_in: boolean;
+    checked_out: boolean;
+    event_id: string;
+    payment_amount: number;
+    payment_status: string;
+    qr_value: string;
+    registration_status: string;
+    student_id: string;
+    ticket_id: string;
+    registered_at: any;
+}
 
 export const subscribeToEvents = (callback: (events: any[]) => void) => {
     return onSnapshot(collection(db, "events"), (snapshot) => {
@@ -110,4 +126,41 @@ export const isStudentRegistered = async (
         id: registration.id,
         ...registration.data(),
     };
+};
+
+export const fetchRegistrations = async (
+    studentId: string
+): Promise<Registration[]> => {
+
+    const q = query(
+        collection(db, "registrations"),
+        where("student_id", "==", studentId)
+    );
+
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+        return [];
+    }
+
+    return snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+    })) as Registration[];
+};
+
+export const fetchAllEvents = async (): Promise<Event[]> => {
+
+    const snapshot = await getDocs(
+        collection(db, "events")
+    );
+
+    if (snapshot.empty) {
+        return [];
+    }
+
+    return snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...(doc.data() as Omit<Event, "id">),
+    }));
 };

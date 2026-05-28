@@ -10,6 +10,7 @@ import {registerForEvent} from "../../../src/services/events";
 import {useState} from "react";
 import {useEvent} from "../../../src/hooks/useEvents";
 import {auth} from "../../../src/lib/firebaseConfig";
+import {Ionicons} from "@expo/vector-icons";
 
 
 export default function PaymentPage() {
@@ -48,7 +49,7 @@ export default function PaymentPage() {
                 event.price,
             );
 
-            router.push({
+            router.replace({
                 pathname: "/event/[id]/ticket",
                 params: {
                     id,
@@ -65,6 +66,18 @@ export default function PaymentPage() {
 
     return (
         <SafeAreaView style={styles.container}>
+            <TouchableOpacity
+                style={styles.backButton}
+                onPress={() => {
+                    if (router.canGoBack()) {
+                        router.back();
+                    } else {
+                        router.replace("/event/[id]/eventDetails");
+                    }
+                }}
+            >
+                <Ionicons name="arrow-back" size={22} color="white" />
+            </TouchableOpacity>
             <View style={styles.card}>
                 <Text style={styles.heading}>
                     Payment Required
@@ -141,6 +154,15 @@ const styles = StyleSheet.create({
         fontSize: 42,
         fontWeight: "800",
         marginVertical: 20,
+    },
+    backButton: {
+        position: "absolute",
+        top: 60,
+        left: 15,
+        backgroundColor: "rgba(0,0,0,0.4)",
+        padding: 8,
+        borderRadius: 20,
+        zIndex: 1
     },
     description: {
         color: "#94A3B8",
