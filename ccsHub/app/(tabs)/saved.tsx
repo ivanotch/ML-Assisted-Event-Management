@@ -12,9 +12,10 @@ import {
 } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { fetchRegistrations, fetchAllEvents } from "../../src/services/events";
+import { fetchRegistrations, fetchAllEvents, subscribeToSavedEvents } from "../../src/services/events";
 import { auth } from "../../src/lib/firebaseConfig";
 import {Event} from '../../src/types/event'
+import {useLocalSearchParams, useRouter} from "expo-router";
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -33,6 +34,16 @@ interface Registration {
     registered_at: any;
 }
 
+interface SavedEventsData {
+    id: string;
+    title: string;
+    imageUrl: string;
+    date: string;
+    start_time: string;
+    end_time: string;
+    location: string;
+}
+
 interface RegisteredEvent extends Event {
     registrationId?: string;
 }
@@ -40,6 +51,7 @@ export default function Saved() {
 
     const [activeTab, setActiveTab] = useState<'registered' | 'upcoming'>('registered');
     const [allEvents, setAllEvents] = useState<Event[]>([]);
+    const [savedEventsInfo, setSavedEventsInfo] = useState<SavedEventsData[]>([])
 
     const [registrations, setRegistrations] = useState<Registration[]>([]);
     const [loading, setLoading] = useState(true);
@@ -73,7 +85,24 @@ export default function Saved() {
         };
 
         loadRegistrations();
-    }, []);
+    }, [uid]);
+
+    useEffect(() => {
+        if (!uid) return;
+
+        setLoading(true);
+
+        const unsubscribe =
+            subscribeToSavedEvents(
+                uid,
+                (events) => {
+                    setSavedEventsInfo(events);
+                    setLoading(false);
+                }
+            );
+
+        return () => unsubscribe();
+    }, [uid]);
 
     const registeredEvents = allEvents
         .filter((event) =>
@@ -93,9 +122,7 @@ export default function Saved() {
         });
 
     // Saved Upcoming Events
-    const upcomingEvents = allEvents.filter(
-        (e) => e.status === 'upcoming'
-    );
+    const upcomingEvents = savedEventsInfo;
 
     if (!currentUser) {
         console.log("No logged in user");
@@ -188,7 +215,7 @@ export default function Saved() {
                                 : styles.tabText
                         }
                     >
-                        Saved Upcoming
+                        Saved Events
                     </Text>
                 </TouchableOpacity>
 

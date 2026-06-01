@@ -9,7 +9,7 @@ import {useEffect, useState} from "react";
 import Fontisto from '@expo/vector-icons/Fontisto';
 import { ScrollView, Image, Animated } from "react-native";
 import {useEvent} from "../../../src/hooks/useEvents"
-import {isStudentRegistered} from "../../../src/services/events"
+import {isStudentRegistered, getSavedEventIds, saveEvent, unsaveEvent} from "../../../src/services/events"
 import {auth} from "../../../src/lib/firebaseConfig";
 
 export default function EventDetails() {
@@ -17,12 +17,15 @@ export default function EventDetails() {
     const { id } = useLocalSearchParams();
     const router = useRouter();
     const [expanded, setExpanded] = useState(false);
-    const [liked, setLiked] = useState(false);
     const { event } = useEvent(id as string);
     const [registered, setRegistered] = useState(false);
     const [checkingRegistration, setCheckingRegistration] = useState(true);
     const currentUser = auth.currentUser;
     const uid = currentUser?.uid;
+
+
+    const [savedEvents, setSavedEvents] =
+        useState<Set<string>>(new Set());
 
     useEffect(() => {
         if (!event || !uid) return;
@@ -46,9 +49,55 @@ export default function EventDetails() {
         })();
     }, [event, uid]);
 
-    if (!event) {
-        return <Text>Loading...</Text>;
-    }
+    useEffect(() => {
+        if (!uid) return;
+        const loadSavedEvents = async () => {
+            const ids = await getSavedEventIds(uid);
+            setSavedEvents(ids);
+        };
+
+        loadSavedEvents();
+    }, [uid]);
+
+    const isSaved = event
+        ? savedEvents.has(event.id)
+        : false;
+
+    const toggleSave = async (eventId: string) => {
+        if (!uid || !event) return;
+
+        try {
+            const isSaved = savedEvents.has(eventId);
+
+            if (isSaved) {
+                await unsaveEvent(uid, eventId);
+
+                setSavedEvents(prev => {
+                    const updated = new Set(prev);
+                    updated.delete(eventId);
+                    return updated;
+                });
+            } else {
+                await saveEvent(uid, {
+                    id: event.id,
+                    title: event.title,
+                    imageUrl: event.imageUrl,
+                    date: event.date,
+                    start_time: event.start_time,
+                    end_time: event.end_time,
+                    location: event.location,
+                });
+
+                setSavedEvents(prev => {
+                    const updated = new Set(prev);
+                    updated.add(eventId);
+                    return updated;
+                });
+            }
+        } catch (error) {
+            console.error("Failed to save event:", error);
+        }
+    };
 
     if (!currentUser) {
         console.log("No logged in user");
@@ -106,12 +155,15 @@ export default function EventDetails() {
                     {/* Heart Button */}
                     <TouchableOpacity
                         style={styles.heartButton}
-                        onPress={() => setLiked(!liked)}
+                        onPress={() => {
+
+                            toggleSave(event.id)
+                        }}
                     >
                         <Ionicons
-                            name={liked ? "heart" : "heart-outline"}
+                            name={isSaved ? "heart" : "heart-outline"}
                             size={22}
-                            color={liked ? "red" : "white"}
+                            color={isSaved ? "red" : "white"}
                         />
                     </TouchableOpacity>
 

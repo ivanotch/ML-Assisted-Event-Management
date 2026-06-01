@@ -3,7 +3,7 @@ import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Octicons from '@expo/vector-icons/Octicons';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { signOut } from "firebase/auth";
 import { auth } from "../../src/lib/firebaseConfig";
@@ -61,8 +61,22 @@ export default function Profile() {
 
     if (loading) {
         return (
-            <SafeAreaView>
-                <Text>Loading...</Text>
+            <SafeAreaView
+                style={{
+                    flex: 1,
+                    justifyContent: "center",
+                    alignItems: "center",
+                    gap: 5,
+                    backgroundColor: "#1d1d1d",
+                }}
+            >
+                <ActivityIndicator
+                    size="large"
+                    color="#3B82F6"
+                />
+                <Text style={{ color: "white" }}>
+                    Loading...
+                </Text>
             </SafeAreaView>
         );
     }
