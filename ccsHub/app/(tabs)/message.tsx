@@ -1,11 +1,12 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {ActivityIndicator, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Image } from 'react-native';
 import { useMemo } from 'react';
+import {auth} from "../../src/lib/firebaseConfig";
 import { router } from 'expo-router';
-
+import {useConversations} from '../../src/hooks/messagesHook';
 
 type TabType = {
   label: string;
@@ -25,100 +26,56 @@ type ChatItem = {
   type: MessageType;
 };
 
-const MESSAGES: ChatItem[] = [
-  // 🔵 DIRECT MESSAGES
-  {
-    id: '1',
-    name: 'John Cruz',
-    avatar: 'https://i.pravatar.cc/150?img=1',
-    lastMessage: 'Hey bro, are you coming later?',
-    time: '2:45 PM',
-    unreadCount: 2,
-    isOnline: true,
-    type: 'message',
-  },
-  {
-    id: '2',
-    name: 'Anna Reyes',
-    avatar: 'https://i.pravatar.cc/150?img=5',
-    lastMessage: 'The event starts at 6PM.',
-    time: '1:10 PM',
-    unreadCount: 0,
-    isOnline: false,
-    type: 'message',
-  },
-
-  // 🟢 GROUPS
-  {
-    id: '3',
-    name: 'Event Committee',
-    avatar: 'https://i.pravatar.cc/150?img=12',
-    lastMessage: 'Meeting moved to Friday.',
-    time: 'Mon',
-    unreadCount: 4,
-    isOnline: false,
-    type: 'group',
-  },
-  {
-    id: '4',
-    name: 'Capstone Team',
-    avatar: 'https://i.pravatar.cc/150?img=18',
-    lastMessage: 'Deadline is next week!',
-    time: 'Yesterday',
-    unreadCount: 1,
-    isOnline: false,
-    type: 'group',
-  },
-
-  // 🟡 INVITATIONS
-  {
-    id: '5',
-    name: 'Hackathon 2026',
-    avatar: 'https://i.pravatar.cc/150?img=20',
-    lastMessage: 'You are invited to join this event.',
-    time: 'Sun',
-    unreadCount: 0,
-    isOnline: false,
-    type: 'invitation',
-  },
-  {
-    id: '6',
-    name: 'Rescue Link Volunteers',
-    avatar: 'https://i.pravatar.cc/150?img=22',
-    lastMessage: 'Invitation pending approval.',
-    time: 'Sat',
-    unreadCount: 0,
-    isOnline: false,
-    type: 'invitation',
-  },
-];
-
-
-function message() {
+export default function Message() {
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('Messages');
+    const currentUser = auth.currentUser;
+    const uid = currentUser?.uid;
 
-  const tabs: TabType[] = [
-    { label: 'Messages', icon: 'message-text-outline' },
-    { label: 'Groups', icon: 'account-group-outline' },
-    { label: 'Invitations', icon: 'email-outline' },
-  ];
 
-  const filteredMessages = useMemo(() => {
-    const searchText = search.trim().toLowerCase();
+    const { conversations, loading } = useConversations(uid);
 
-    return MESSAGES.filter((item) => {
-      const matchesSearch =
-        item.name.toLowerCase().includes(searchText) || item.lastMessage.toLowerCase().includes(searchText);
+  // const tabs: TabType[] = [
+  //   { label: 'Messages', icon: 'message-text-outline' },
+  //   { label: 'Groups', icon: 'account-group-outline' },
+  //   { label: 'Invitations', icon: 'email-outline' },
+  // ];
 
-      const matchesTab =
-        (activeTab === 'Messages' && item.type === 'message') ||
-        (activeTab === 'Groups' && item.type === 'group') ||
-        (activeTab === 'Invitations' && item.type === 'invitation');
+    const filteredConversations = useMemo(() => {
+        const searchText = search.trim().toLowerCase();
 
-      return matchesTab && matchesSearch;
-    });
-  }, [search, activeTab]);
+        return conversations.filter(
+            (conversation) =>
+                conversation.otherUserName
+                    .toLowerCase()
+                    .includes(searchText) ||
+                conversation.lastMessage?.text
+                    ?.toLowerCase()
+                    .includes(searchText)
+        );
+    }, [search, conversations]);
+
+  if (loading) {
+      return (
+          <SafeAreaView
+              style={{
+                  flex: 1,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  gap: 5,
+                  backgroundColor: "#1d1d1d",
+              }}
+          >
+              <ActivityIndicator
+                  size="large"
+                  color="#3B82F6"
+              />
+              <Text style={{ color: "white" }}>
+                  Loading...
+              </Text>
+          </SafeAreaView>
+      );
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, paddingHorizontal: 10, backgroundColor: '#ffffff' }}>
@@ -126,32 +83,6 @@ function message() {
       <Text style={{ textAlign: 'center', marginVertical: 10, fontSize: 18, fontWeight: '600' }}>
         Messages
       </Text>
-
-      <View style={styles.tabContainer}>
-        {tabs.map((tab) => {
-          const isActive = activeTab === tab.label;
-
-          return (
-            <TouchableOpacity
-              key={tab.label}
-              style={[styles.tabItem, isActive && styles.activeTab]}
-              onPress={() => setActiveTab(tab.label)}
-            >
-              {isActive && (
-                <MaterialCommunityIcons
-                  name={tab.icon}
-                  size={16}
-                  color="white"
-                  style={{ marginRight: 6 }}
-                />
-              )}
-              <Text style={[styles.tabText, isActive && styles.activeText]}>
-                {tab.label}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
 
       {/* search box */}
       <View style={styles.searchContainer}>
@@ -171,36 +102,45 @@ function message() {
       </View>
 
       <FlatList
-        data={filteredMessages}
+        data={filteredConversations}
+        ListEmptyComponent={
+            <View style={{ paddingTop: 50, alignItems: "center" }}>
+                <Text>No conversations yet.</Text>
+            </View>
+        }
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.chatItem}
             onPress={() => router.push({
               pathname: '/chat/[id]',
-              params: { id: item.id },
+              params: {
+                  id: item.conversationId,
+                  name: item.otherUserName,
+                  avatarUrl:  encodeURIComponent(item.otherAvatarUrl),
+                  otherUserId: item.otherUserId
+              },
             })}
           >
             <View style={{ position: 'relative' }}>
-              <Image source={{ uri: item.avatar }} style={styles.avatar} />
-              {item.isOnline && <View style={styles.onlineIndicator} />}
+              <Image source={{ uri: item.otherAvatarUrl }} style={styles.avatar} />
             </View>
 
             <View style={styles.chatContent}>
               <View style={styles.chatHeader}>
-                <Text style={styles.chatName}>{item.name}</Text>
-                <Text style={styles.chatTime}>{item.time}</Text>
+                <Text style={styles.chatName}>{item.otherUserName}</Text>
+                <Text style={styles.chatTime}>{item.lastMessage?.created_at?.toDate?.().toLocaleTimeString()}</Text>
               </View>
 
               <View style={styles.messageRow}>
                 <Text
                   style={[
                     styles.lastMessage,
-                    item.unreadCount > 0 && { fontWeight: '600', color: '#000' },
+                    item.unreadCount > 0 && { fontWeight: '500', color: '#000' },
                   ]}
                   numberOfLines={1}
                 >
-                  {item.lastMessage}
+                  {item.lastMessage?.text}
                 </Text>
 
                 {item.unreadCount > 0 && (
@@ -217,8 +157,6 @@ function message() {
     </SafeAreaView >
   )
 }
-
-export default message
 
 const styles = StyleSheet.create({
   headerContainer: {
@@ -291,6 +229,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 2,
     height: 40,
     marginBottom: 16,
+      marginTop: 16,
   },
   searchInput: { flex: 1, marginLeft: 8, fontSize: 16 },
   dropdownContainer: {
@@ -350,7 +289,7 @@ const styles = StyleSheet.create({
   chatHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 4,
+    marginBottom: 0,
   },
 
   chatName: {

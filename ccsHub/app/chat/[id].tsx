@@ -2,45 +2,40 @@ import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import {Stack} from 'expo-router';
 import {
-  Image,
-  FlatList,
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Image,
+    FlatList,
+    KeyboardAvoidingView,
+    Platform,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View, ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-
-type Message = {
-  id: string;
-  text: string;
-  sender: 'me' | 'other';
-};
-
-const SAMPLE_CONVERSATIONS: Record<string, Message[]> = {
-  '1': [
-    { id: '1', text: 'Hey bro!', sender: 'other' },
-    { id: '2', text: 'Are you coming later?', sender: 'other' },
-    { id: '3', text: 'Yes, I’ll be there at 6.', sender: 'me' },
-  ],
-  '2': [
-    { id: '1', text: 'The event starts at 6PM.', sender: 'other' },
-    { id: '2', text: 'Thanks for the reminder!', sender: 'me' },
-  ],
-  '3': [
-    { id: '1', text: 'Deadline is next week!', sender: 'other' },
-  ],
-};
+import {useUserConversations} from "../../src/hooks/messagesHook";
+import {auth} from "../../src/lib/firebaseConfig";
+import {SafeAreaView} from "react-native-safe-area-context";
 
 export default function ChatScreen() {
-  const { id } = useLocalSearchParams();
-  const flatListRef = useRef<FlatList>(null);
+    const {
+        id,
+        name,
+        otherUserId,
+        avatarUrl: encodedAvatarUrl,
+    } = useLocalSearchParams();
+    const avatarUrl =
+        typeof encodedAvatarUrl === "string"
+            ? encodedAvatarUrl.trim()
+            : "";
+    const params = useLocalSearchParams();
 
-  const [messages, setMessages] = useState<Message[]>(
-    SAMPLE_CONVERSATIONS[id as string] || []
+    console.log("ALL PARAMS:", JSON.stringify(params, null, 2));
+  const flatListRef = useRef<FlatList>(null);
+  const currentUid = auth.currentUser?.uid;
+
+  const { messages, loading } = useUserConversations(
+      String(id)
   );
 
   const [input, setInput] = useState('');
@@ -51,23 +46,39 @@ export default function ChatScreen() {
     }, 100);
   }, [messages]);
 
-  const sendMessage = () => {
-    if (!input.trim()) return;
+    const sendMessage = async () => {
+        if (!input.trim()) return;
 
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      text: input,
-      sender: 'me',
+        // await sendMessageToFirestore(
+        //     String(id),
+        //     input,
+        //     auth.currentUser!.uid
+        // );
+
+        setInput("");
     };
 
-    setMessages((prev) => [...prev, newMessage]);
-    setInput('');
-  };
-
-  const user = {
-    name: "John Doe",
-    profilePic: "https://i.pravatar.cc/150?img=3",
-  };
+    if (loading) {
+        return (
+            <SafeAreaView
+                style={{
+                    flex: 1,
+                    justifyContent: "center",
+                    alignItems: "center",
+                    gap: 5,
+                    backgroundColor: "#1d1d1d",
+                }}
+            >
+                <ActivityIndicator
+                    size="large"
+                    color="#3B82F6"
+                />
+                <Text style={{ color: "white" }}>
+                    Loading...
+                </Text>
+            </SafeAreaView>
+        );
+    }
 
   return (
     <>
@@ -75,11 +86,18 @@ export default function ChatScreen() {
         headerTitle: () => (
           <View style={{flexDirection: 'row', alignItems: 'center'}}>
               <Image
-                source={{uri: user.profilePic}}
-                style={{width: 35, height: 35, borderRadius: 50, marginRight: 10}}
+                  source={{ uri: avatarUrl }}
+                  style={{
+                      width: 35,
+                      height: 35,
+                      borderRadius: 50,
+                      marginRight: 10,
+                  }}
+                  onLoad={() => console.log("loaded")}
+                  onError={(e) => console.log("image error", e.nativeEvent)}
               />
               <Text style={{fontSize: 18, fontWeight: '600'}}>
-                {user.name}
+                {name}
               </Text>
           </View>
         )
@@ -96,24 +114,42 @@ export default function ChatScreen() {
           data={messages}
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ padding: 12 }}
-          renderItem={({ item }) => (
-            <View
-              style={[
-                styles.messageContainer,
-                item.sender === 'me'
-                  ? styles.myMessage
-                  : styles.otherMessage,
-              ]}
-            >
-              <Text
-                style={{
-                  color: item.sender === 'me' ? 'white' : 'black',
-                }}
-              >
-                {item.text}
-              </Text>
-            </View>
-          )}
+          renderItem={({ item }) => {
+              const isMine = item.senderId === auth.currentUser?.uid;
+
+              return (
+                  <View
+
+                  >
+                      <View
+                          style={[
+                              styles.messageContainer,
+                              isMine
+                                  ? styles.myMessage
+                                  : styles.otherMessage,
+                          ]}
+                      >
+                          <Text
+                              style={{
+                                  color: isMine
+                                      ? "white"
+                                      : "black",
+                              }}
+                          >
+                              {item.text}
+                          </Text>
+
+                      </View>
+                      <Text style={[{fontSize: 10, color: 'grey'},
+                              {
+                                  alignSelf: isMine ? "flex-end" : "flex-start",
+                              },
+                      ]}>
+                          {item.created_at?.toDate()?.toLocaleTimeString()}
+                      </Text>
+                  </View>
+              );
+          }}
         />
 
         {/* Input Area */}
