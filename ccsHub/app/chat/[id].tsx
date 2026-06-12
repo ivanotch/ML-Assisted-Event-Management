@@ -16,8 +16,12 @@ import { Ionicons } from '@expo/vector-icons';
 import {useUserConversations} from "../../src/hooks/messagesHook";
 import {auth} from "../../src/lib/firebaseConfig";
 import {SafeAreaView} from "react-native-safe-area-context";
+import {sendMessageToConversation} from "../../src/services/messages";
+import { useHeaderHeight } from "@react-navigation/elements";
+import { KeyboardAwareFlatList } from "react-native-keyboard-aware-scroll-view";
 
 export default function ChatScreen() {
+
     const {
         id,
         name,
@@ -29,32 +33,43 @@ export default function ChatScreen() {
             ? encodedAvatarUrl.trim()
             : "";
     const params = useLocalSearchParams();
-
     console.log("ALL PARAMS:", JSON.stringify(params, null, 2));
-  const flatListRef = useRef<FlatList>(null);
-  const currentUid = auth.currentUser?.uid;
+    const flatListRef = useRef<FlatList>(null);
+    const currentUid = auth.currentUser?.uid;
+    const [loadingScreen, setLoadingScreen] = useState(false);
+    const { messages, loading } = useUserConversations(
+        String(id)
+    );
+    const headerHeight = useHeaderHeight();
 
-  const { messages, loading } = useUserConversations(
-      String(id)
-  );
+    const [input, setInput] = useState('');
 
-  const [input, setInput] = useState('');
-
-  useEffect(() => {
-    setTimeout(() => {
-      flatListRef.current?.scrollToEnd({ animated: true });
-    }, 100);
-  }, [messages]);
+    useEffect(() => {
+        flatListRef.current?.scrollToEnd({ animated: true });
+    }, [messages]);
 
     const sendMessage = async () => {
-        if (!input.trim()) return;
+        if (!input.trim() || !id || !currentUid) return;
 
-        // await sendMessageToFirestore(
-        //     String(id),
-        //     input,
-        //     auth.currentUser!.uid
-        // );
+        if (loadingScreen) return;
+        setLoadingScreen(true);
 
+        const senderId = currentUid;
+        const receiverId = otherUserId.toString();
+        const activeConvId = id.toString();
+
+        await sendMessageToConversation(
+            activeConvId,
+            senderId,
+            receiverId,
+            {
+                text: input,
+                senderId: senderId,
+                created_at: null,
+            }
+        );
+
+        setLoadingScreen(false);
         setInput("");
     };
 
@@ -81,7 +96,7 @@ export default function ChatScreen() {
     }
 
   return (
-    <>
+    <SafeAreaView style={{ flex: 1 }} edges={["bottom"]}>
       <Stack.Screen options={{
         headerTitle: () => (
           <View style={{flexDirection: 'row', alignItems: 'center'}}>
@@ -104,16 +119,16 @@ export default function ChatScreen() {
       }} />
 
       <KeyboardAvoidingView
-        style={{ flex: 1, backgroundColor: '#fff' }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={90}
+        style={{ flex: 1, backgroundColor: '#fff'}}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={100}
       >
         {/* Messages */}
         <FlatList
           ref={flatListRef}
           data={messages}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={{ padding: 12 }}
+          contentContainerStyle={{ padding: 12,flexGrow: 1, justifyContent: "flex-end" }}
           renderItem={({ item }) => {
               const isMine = item.senderId === auth.currentUser?.uid;
 
@@ -166,7 +181,7 @@ export default function ChatScreen() {
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
-    </>
+    </SafeAreaView>
   );
 }
 
